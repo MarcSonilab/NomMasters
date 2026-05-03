@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<title>NomsMasters — Mockup v2</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 20px; }
+
+.tabbar { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 2px solid #333; }
+.tab { padding: 8px 20px; cursor: pointer; border-radius: 6px 6px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: #888; background: #222; border: 1px solid #333; border-bottom: none; }
+.tab.active { background: #16213e; color: #60a5fa; border-color: #60a5fa; }
+
+.app-window { background: #16213e; border-radius: 10px; border: 1px solid #2a3a5e; padding: 20px; max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+
+.form-section { background: #0f3460; border-radius: 8px; padding: 10px 14px; border-left: 3px solid; }
+.form-section.ref   { border-color: #818cf8; }
+.form-section.titol { border-color: #fb923c; }
+.form-section.fmt   { border-color: #4ade80; }
+.form-section.prf   { border-color: #22d3ee; }
+.form-section.idi   { border-color: #f472b6; }
+.form-section.vis   { border-color: #a78bfa; }
+.form-section.ls    { border-color: #6366f1; }
+.form-section.ver   { border-color: #fbbf24; }
+.form-section.ta    { border-color: #f87171; }
+
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #aaa; margin-bottom: 7px; }
+
+input[type=text], input[type=number] {
+  background: #0a1628; border: 1px solid #334; border-radius: 4px;
+  color: #e0e0e0; padding: 5px 8px; font-size: 12px; width: 100%;
+}
+input[type=number].ver-input { width: 60px; display: inline-block; }
+input:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Pills */
+.pills { display: flex; flex-wrap: wrap; gap: 5px; }
+.pill { padding: 4px 11px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid #444; background: #0a1628; color: #aaa; user-select: none; }
+.pill.active-prf  { background: #0e7490; border-color: #22d3ee; color: #fff; }
+.pill.active-vis  { background: #7c3aed; border-color: #a78bfa; color: #fff; }
+.pill.active-ls   { background: #4338ca; border-color: #818cf8; color: #fff; }
+.pill.active-ta   { background: #dc2626; border-color: #f87171; color: #fff; }
+.pill.active-cn   { background: #b91c1c; border-color: #fca5a5; color: #fff; }
+
+/* TA blocks */
+.ta-block { border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
+.ta-mix { background: #1a1040; border: 1px solid #4c1d95; }
+.ta-me  { background: #0d2420; border: 1px solid #065f46; }
+.ta-dx  { background: #1a1000; border: 1px solid #78350f; }
+.ta-type-btn { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid #444; background: #0a1628; color: #aaa; user-select: none; flex-shrink: 0; }
+.ta-type-btn.active-ta { background: #dc2626; border-color: #f87171; color: #fff; }
+.ta-channels { display: flex; gap: 5px; flex-wrap: wrap; }
+.ta-channels.disabled { opacity: 0.3; pointer-events: none; }
+.pill.active-fmt  { background: #15803d; border-color: #4ade80; color: #fff; }
+
+/* Language buttons — 3 states */
+.lang-btn { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid #444; background: #0a1628; color: #aaa; user-select: none; transition: all 0.12s; }
+.lang-btn.sel  { background: #166534; border-color: #4ade80; color: #d1fae5; }   /* green = ALT */
+.lang-btn.pin  { background: #92400e; border-color: #f59e0b; color: #fef3c7; }   /* orange = ORG/PIN */
+
+/* Layout rows */
+.row-ref-titol  { display: grid; grid-template-columns: 1fr 3fr; gap: 10px; }
+.row-prf-idi    { display: flex; gap: 10px; align-items: flex-start; }
+.row-vis-lsver  { display: flex; gap: 10px; align-items: stretch; }
+
+/* PRF: auto-width */
+.prf-wrap { flex-shrink: 0; width: auto; }
+
+/* VER inline */
+.ver-inline { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.ver-v-label { font-size: 12px; font-weight: 600; color: #aaa; }
+
+/* SER fields */
+.ser-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 8px; }
+.ser-sublabel { font-size: 10px; color: #888; margin-bottom: 3px; }
+
+/* Generate button */
+.btn-generate { padding: 10px; background: linear-gradient(135deg, #3b82f6, #6366f1); border: none; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
+
+/* Results */
+.results-area { border-top: 1px solid #2a3a5e; padding-top: 14px; }
+.results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.results-title { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #aaa; }
+.btn-copy-all { padding: 5px 14px; background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 5px; color: #60a5fa; font-size: 11px; cursor: pointer; }
+.result-section-title { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #555; margin: 10px 0 5px; }
+.result-section-title:hover { color: #888; }
+.section-body { overflow: hidden; transition: max-height 0.25s ease; max-height: 1000px; }
+.name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.name-box { flex: 1; background: #070d1a; border: 1px solid #1e3a5f; border-radius: 6px; padding: 6px 10px; font-family: 'Consolas', monospace; font-size: 11px; display: flex; flex-wrap: wrap; gap: 1px; align-items: center; }
+.btn-copy-one { padding: 4px 10px; background: #1e3a5f; border: 1px solid #334; border-radius: 4px; color: #888; font-size: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+
+/* Segments */
+.seg { padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.s-sep { color: #555; }
+.s-ref { background: #312e81; color: #a5b4fc; }
+.s-tit { background: #7c2d12; color: #fdba74; }
+.s-fmt { background: #14532d; color: #86efac; }
+.s-prf { background: #164e63; color: #67e8f9; }
+.s-idi { background: #831843; color: #fbcfe8; }
+.s-ver { background: #713f12; color: #fde68a; }
+.s-vis { background: #4c1d95; color: #ddd6fe; }
+.s-ls  { background: #1e1b4b; color: #a5b4fc; }
+.s-ta  { background: #7f1d1d; color: #fca5a5; }
+.s-vxx { background: #1f2937; color: #9ca3af; }
+.s-ext { background: #111827; color: #6b7280; }
+
+/* Toggles */
+.toggle { width: 36px; height: 18px; background: #4ade80; border-radius: 9px; position: relative; cursor: pointer; flex-shrink:0; transition: background 0.2s; }
+.toggle::after { content: ''; width: 14px; height: 14px; background: #fff; border-radius: 50%; position: absolute; top: 2px; right: 2px; transition: right 0.2s; }
+.toggle.tog-off { background: #374151; }
+.toggle.tog-off::after { right: auto; left: 2px; }
+
+/* Note */
+.note { font-size: 10px; color: #555; margin-top: 4px; }
+.pin-note { font-size: 10px; color: #666; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div style="max-width:960px;margin:0 auto;">
+  <div style="margin-bottom:12px;">
+    <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:1px;">NomsMasters</div>
+    <div style="font-size:11px;color:#555;margin-top:2px;">Generador i desxifrador de nomenclatura de màsters</div>
+  </div>
+
+  <div class="tabbar">
+    <div class="tab active">① Crear noms</div>
+    <div class="tab">② Desxifrar nom</div>
+    <div class="tab">③ Renombrar per lots</div>
+  </div>
+
+  <div class="app-window">
+
+    <!-- ROW 1: REF (1/4) + TÍTOL (3/4) -->
+    <div class="row-ref-titol">
+      <div class="form-section ref">
+        <div class="section-label">REF — Referència</div>
+        <input type="text" placeholder="ex: 1983, C0042" />
+      </div>
+      <div class="form-section titol">
+        <div class="section-label">TÍTOL</div>
+        <input type="text" id="titol-input" placeholder="ex: BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS" onblur="normalizeTitol(this)" />
+      </div>
+    </div>
+
+    <!-- ROW 2: FMT + SER fields en una sola fila -->
+    <div class="form-section fmt">
+      <div class="section-label">FMT — Tipus de referència</div>
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div class="pills" style="flex-shrink:0;">
+          <div class="pill active-fmt" onclick="toggleFmt(this,'FTR')" title="Feature">FTR</div>
+          <div class="pill" onclick="toggleFmt(this,'TLR')" title="Tràiler">TLR</div>
+          <div class="pill" onclick="toggleFmt(this,'SPT')" title="Spot">SPT</div>
+          <div class="pill" onclick="toggleFmt(this,'SER')" title="Sèrie">SER</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; flex:1; min-width:300px;">
+          <div>
+            <div class="ser-sublabel">Temporada</div>
+            <input type="number" id="ser-tmp" placeholder="01" disabled />
+          </div>
+          <div>
+            <div class="ser-sublabel">Episodi des de</div>
+            <input type="number" id="ser-from" placeholder="1" disabled />
+          </div>
+          <div>
+            <div class="ser-sublabel">Episodi fins a</div>
+            <input type="number" id="ser-to" placeholder="99" disabled />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 3: PRF (auto) + IDI (flex) -->
+    <div class="row-prf-idi">
+      <div class="form-section prf prf-wrap">
+        <div class="section-label">PRF — Perfil / Destí</div>
+        <div class="pills">
+          <div class="pill active-prf" onclick="toggle(this,'active-prf')">MASTER</div>
+          <div class="pill active-prf" onclick="toggle(this,'active-prf')">DCP</div>
+          <div class="pill" onclick="toggle(this,'active-prf')">BR</div>
+          <div class="pill" onclick="toggle(this,'active-prf')">SD</div>
+        </div>
+        <div class="note">Pots marcar-ne diversos</div>
+      </div>
+      <div class="form-section idi" style="flex:1;">
+        <div class="section-label">IDI — Idiomes</div>
+        <div class="pills" id="lang-pills">
+          <div class="lang-btn" onclick="cycleLang(this)" title="Espanyol">ES</div>
+          <div class="lang-btn sel" onclick="cycleLang(this)" title="Anglès">EN</div>
+          <div class="lang-btn sel" onclick="cycleLang(this)" title="Català">CA</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="Basc">EU</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="Francès">FR</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="Rus">RU</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="Xinès">ZH</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="Japonès">JA</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="Noruec">NO</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="Txec">CS</div>
+          <div class="lang-btn" onclick="cycleLang(this)" title="No aplica">XX</div>
+        </div>
+        <div class="pin-note" id="pin-note">
+          <span style="color:#4ade80">■</span> Seleccionat = ALT &nbsp;
+          <span style="color:#f59e0b">■</span> Pin (2× clic) = ORG &nbsp;·&nbsp; Màx. 2 pins
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 4: VIS | Longitud | Versió — tots tres horitzontals -->
+    <div class="row-vis-lsver">
+      <div class="form-section vis" style="flex:3;">
+        <div class="section-label">VIS — Estat visual (vídeo)</div>
+        <div class="pills">
+          <div class="pill" onclick="toggle(this,'active-vis')" title="Sense modificació visual">XXX</div>
+          <div class="pill active-vis" onclick="toggle(this,'active-vis')" title="Grafismes cremats">GRA</div>
+          <div class="pill" onclick="toggle(this,'active-vis')" title="Inserts cremats">INT</div>
+          <div class="pill" onclick="toggle(this,'active-vis')" title="Subtítols cremats">SBT</div>
+          <div class="pill" onclick="toggle(this,'active-vis')" title="Grafismes + Inserts cremats">GRA_INT</div>
+          <div class="pill active-vis" onclick="toggle(this,'active-vis')" title="Grafismes + Subtítols cremats">GRA_SBT</div>
+        </div>
+        <div class="note">Pots marcar-ne diversos · àudio sempre usa XXX automàticament</div>
+      </div>
+      <div class="form-section ls" style="flex-shrink:0;">
+        <div class="section-label">Longitud (S/L)</div>
+        <div class="pills">
+          <div class="pill active-ls" onclick="toggleSingle(this,'active-ls','.ls-pill')">Short</div>
+          <div class="pill ls-pill" onclick="toggleSingle(this,'active-ls','.ls-pill')">Long</div>
+        </div>
+      </div>
+      <div class="form-section ver" style="flex-shrink:0;">
+        <div class="section-label">Versió de fitxer</div>
+        <div class="ver-inline">
+          <span class="ver-v-label">V</span>
+          <input type="number" class="ver-input" placeholder="01" min="1" max="99" oninput="clampVer(this)" />
+        </div>
+        <div class="note">Buit = V01 automàtic</div>
+      </div>
+    </div>
+
+    <!-- ROW 5: TA + CN — 3 blocs independents -->
+    <div class="form-section ta">
+      <div class="section-label">TA · CN — Tipus d'àudio × Canals</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+
+        <!-- MIX -->
+        <div class="ta-block ta-mix" id="block-MIX">
+          <div class="ta-type-btn active-ta" onclick="toggleTaBlock(this,'block-MIX')">MIX</div>
+          <div class="ta-channels">
+            <div class="pill cn-pill" onclick="toggleCn(this)">1</div>
+            <div class="pill cn-pill active-cn" onclick="toggleCn(this)">2_0</div>
+            <div class="pill cn-pill active-cn" onclick="toggleCn(this)">5_1</div>
+            <div class="pill cn-pill" onclick="toggleCn(this)">7_1_4</div>
+          </div>
+        </div>
+
+        <!-- ME -->
+        <div class="ta-block ta-me" id="block-ME">
+          <div class="ta-type-btn active-ta" onclick="toggleTaBlock(this,'block-ME')">ME</div>
+          <div class="ta-channels">
+            <div class="pill cn-pill" onclick="toggleCn(this)">1</div>
+            <div class="pill cn-pill" onclick="toggleCn(this)">2_0</div>
+            <div class="pill cn-pill active-cn" onclick="toggleCn(this)">5_1</div>
+            <div class="pill cn-pill" onclick="toggleCn(this)">7_1_4</div>
+          </div>
+        </div>
+
+        <!-- DX -->
+        <div class="ta-block ta-dx" id="block-DX">
+          <div class="ta-type-btn" onclick="toggleTaBlock(this,'block-DX')">DX</div>
+          <div class="ta-channels disabled">
+            <div class="pill cn-pill" onclick="toggleCn(this)">1</div>
+            <div class="pill cn-pill" onclick="toggleCn(this)">2_0</div>
+            <div class="pill cn-pill" onclick="toggleCn(this)">5_1</div>
+            <div class="pill cn-pill" onclick="toggleCn(this)">7_1_4</div>
+          </div>
+        </div>
+
+      </div>
+      <div class="note" style="margin-top:8px;">Activa el tipus per habilitar els canals · genera totes les combinacions actives</div>
+    </div>
+
+    <!-- 3 toggles -->
+    <div style="display:flex;flex-direction:row;gap:24px;padding:4px 0;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="toggle" id="tog-video" onclick="toggleSwitch(this)"></div>
+        <span style="font-size:11px;color:#aaa;">Generar nomenclatures per <strong style="color:#e0e0e0;">vídeos</strong></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="toggle" id="tog-audio" onclick="toggleAudioSwitch(this)"></div>
+        <span style="font-size:11px;color:#aaa;">Generar nomenclatures per <strong style="color:#e0e0e0;">àudios</strong></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="toggle tog-off" id="tog-ext" onclick="toggleSwitch(this)"></div>
+        <span style="font-size:11px;color:#aaa;">Incloure extensió en el nom <strong style="color:#e0e0e0;">(.mov / .wav)</strong></span>
+      </div>
+    </div>
+
+    <button class="btn-generate">⚡ CREAR NOMS</button>
+
+    <!-- RESULTS -->
+    <div class="results-area">
+      <div class="results-header">
+        <span class="results-title">Noms generats — 1983 · MASTER+DCP · ES(ORG)+EN+CA</span>
+        <button class="btn-copy-all">📋 Copiar tots</button>
+      </div>
+
+      <div class="result-section-title" style="cursor:pointer;user-select:none;" onclick="toggleSection(this)">▼ VÍDEO (.mov)</div>
+      <div class="section-body">
+        <div class="name-row">
+          <div class="name-box"><span class="seg s-ref">1983</span><span class="s-sep">-N-</span><span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span><span class="s-sep">-N-</span><span class="seg s-fmt">FTR</span><span class="s-sep">-</span><span class="seg s-prf">MASTER</span><span class="s-sep">-</span><span class="seg s-idi">ES</span><span class="s-sep">-</span><span class="seg s-ver">ORG</span><span class="s-sep">-</span><span class="seg s-vis">GRA</span><span class="s-sep">-</span><span class="seg s-ls">S</span><span class="s-sep">-</span><span class="seg s-ta">XXX</span><span class="s-sep">-</span><span class="seg s-vxx">V01</span><span class="seg s-ext">.mov</span></div>
+          <button class="btn-copy-one">📋 Copiar</button>
+        </div>
+        <div class="name-row">
+          <div class="name-box"><span class="seg s-ref">1983</span><span class="s-sep">-N-</span><span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span><span class="s-sep">-N-</span><span class="seg s-fmt">FTR</span><span class="s-sep">-</span><span class="seg s-prf">MASTER</span><span class="s-sep">-</span><span class="seg s-idi">ES</span><span class="s-sep">-</span><span class="seg s-ver">ORG</span><span class="s-sep">-</span><span class="seg s-vis">GRA_SBT</span><span class="s-sep">-</span><span class="seg s-ls">S</span><span class="s-sep">-</span><span class="seg s-ta">XXX</span><span class="s-sep">-</span><span class="seg s-vxx">V01</span><span class="seg s-ext">.mov</span></div>
+          <button class="btn-copy-one">📋 Copiar</button>
+        </div>
+        <div class="name-row">
+          <div class="name-box"><span class="seg s-ref">1983</span><span class="s-sep">-N-</span><span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span><span class="s-sep">-N-</span><span class="seg s-fmt">FTR</span><span class="s-sep">-</span><span class="seg s-prf">DCP</span><span class="s-sep">-</span><span class="seg s-idi">EN</span><span class="s-sep">-</span><span class="seg s-ver">ALT</span><span class="s-sep">-</span><span class="seg s-vis">GRA</span><span class="s-sep">-</span><span class="seg s-ls">S</span><span class="s-sep">-</span><span class="seg s-ta">XXX</span><span class="s-sep">-</span><span class="seg s-vxx">V01</span><span class="seg s-ext">.mov</span></div>
+          <button class="btn-copy-one">📋 Copiar</button>
+        </div>
+      </div>
+
+      <div class="result-section-title" style="margin-top:12px;cursor:pointer;user-select:none;" onclick="toggleSection(this)">▼ ÀUDIO (.wav)</div>
+      <div class="section-body">
+        <div class="name-row">
+          <div class="name-box"><span class="seg s-ref">1983</span><span class="s-sep">-N-</span><span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span><span class="s-sep">-N-</span><span class="seg s-fmt">FTR</span><span class="s-sep">-</span><span class="seg s-prf">MASTER</span><span class="s-sep">-</span><span class="seg s-idi">ES</span><span class="s-sep">-</span><span class="seg s-ver">ORG</span><span class="s-sep">-</span><span class="seg s-vis">XXX</span><span class="s-sep">-</span><span class="seg s-ls">S</span><span class="s-sep">-</span><span class="seg s-ta">MIX_2_0</span><span class="s-sep">-</span><span class="seg s-vxx">V01</span><span class="seg s-ext">.wav</span></div>
+          <button class="btn-copy-one">📋 Copiar</button>
+        </div>
+        <div class="name-row">
+          <div class="name-box"><span class="seg s-ref">1983</span><span class="s-sep">-N-</span><span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span><span class="s-sep">-N-</span><span class="seg s-fmt">FTR</span><span class="s-sep">-</span><span class="seg s-prf">MASTER</span><span class="s-sep">-</span><span class="seg s-idi">ES</span><span class="s-sep">-</span><span class="seg s-ver">ORG</span><span class="s-sep">-</span><span class="seg s-vis">XXX</span><span class="s-sep">-</span><span class="seg s-ls">S</span><span class="s-sep">-</span><span class="seg s-ta">MIX_5_1</span><span class="s-sep">-</span><span class="seg s-vxx">V01</span><span class="seg s-ext">.wav</span></div>
+          <button class="btn-copy-one">📋 Copiar</button>
+        </div>
+        <div class="name-row">
+          <div class="name-box"><span class="seg s-ref">1983</span><span class="s-sep">-N-</span><span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span><span class="s-sep">-N-</span><span class="seg s-fmt">FTR</span><span class="s-sep">-</span><span class="seg s-prf">MASTER</span><span class="s-sep">-</span><span class="seg s-idi">ES</span><span class="s-sep">-</span><span class="seg s-ver">ORG</span><span class="s-sep">-</span><span class="seg s-vis">XXX</span><span class="s-sep">-</span><span class="seg s-ls">S</span><span class="s-sep">-</span><span class="seg s-ta">ME_2_0</span><span class="s-sep">-</span><span class="seg s-vxx">V01</span><span class="seg s-ext">.wav</span></div>
+          <button class="btn-copy-one">📋 Copiar</button>
+        </div>
+        <div class="name-row">
+          <div class="name-box"><span class="seg s-ref">1983</span><span class="s-sep">-N-</span><span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span><span class="s-sep">-N-</span><span class="seg s-fmt">FTR</span><span class="s-sep">-</span><span class="seg s-prf">MASTER</span><span class="s-sep">-</span><span class="seg s-idi">ES</span><span class="s-sep">-</span><span class="seg s-ver">ORG</span><span class="s-sep">-</span><span class="seg s-vis">XXX</span><span class="s-sep">-</span><span class="seg s-ls">S</span><span class="s-sep">-</span><span class="seg s-ta">ME_5_1</span><span class="s-sep">-</span><span class="seg s-vxx">V01</span><span class="seg s-ext">.wav</span></div>
+          <button class="btn-copy-one">📋 Copiar</button>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div style="font-size:10px;color:#3b5;margin-top:12px;padding:8px 12px;background:#0a1a0a;border-radius:5px;border-left:3px solid #2d6a2d;">
+        <span class="seg s-ref">REF</span> &nbsp;
+        <span class="seg s-tit">TÍTOL</span> &nbsp;
+        <span class="seg s-fmt">FMT</span> &nbsp;
+        <span class="seg s-prf">PRF</span> &nbsp;
+        <span class="seg s-idi">IDI</span> &nbsp;
+        <span class="seg s-ver">VER</span> &nbsp;
+        <span class="seg s-vis">VIS</span> &nbsp;
+        <span class="seg s-ls">L/S</span> &nbsp;
+        <span class="seg s-ta">TA_CN</span> &nbsp;
+        <span class="seg s-vxx">VXX</span> &nbsp;
+        <span class="seg s-ext">.ext</span>
+      </div>
+    </div>
+
+  </div><!-- end app-window -->
+</div>
+
+<script>
+// Plegar/desplegar seccions de resultats
+function toggleSection(header) {
+  const body = header.nextElementSibling;
+  const collapsed = body.style.maxHeight === '0px';
+  body.style.maxHeight = collapsed ? '1000px' : '0px';
+  header.textContent = header.textContent.replace(collapsed ? '▶' : '▼', collapsed ? '▼' : '▶');
+}
+
+// Retorna els canals actius d'un bloc
+function activeChOf(blockId) {
+  return document.querySelectorAll('#' + blockId + ' .cn-pill.active-cn');
+}
+
+// Activa canal per defecte d'un bloc (2_0 per MIX/ME, 1 per DX)
+function setDefaultCh(blockId) {
+  const def = blockId === 'block-DX' ? '1' : '2_0';
+  document.querySelectorAll('#' + blockId + ' .cn-pill').forEach(p => {
+    if (p.textContent.trim() === def) p.classList.add('active-cn');
+  });
+}
+
+// Sincronitza toggle d'àudio segons si hi ha algun bloc TA actiu
+function syncAudioToggle() {
+  const anyActive = document.querySelectorAll('.ta-type-btn.active-ta').length > 0;
+  const tog = document.getElementById('tog-audio');
+  tog.classList.toggle('tog-off', !anyActive);
+}
+
+// TA block: activa/desactiva el tipus i els canals del bloc
+function toggleTaBlock(btn, blockId) {
+  const isActive = btn.classList.toggle('active-ta');
+  const channels = document.querySelector('#' + blockId + ' .ta-channels');
+  channels.classList.toggle('disabled', !isActive);
+  // Sempre neteja tots els canals primer
+  document.querySelectorAll('#' + blockId + ' .cn-pill').forEach(p => p.classList.remove('active-cn'));
+  // Si s'activa, posa només el canal per defecte
+  if (isActive) setDefaultCh(blockId);
+  syncAudioToggle();
+}
+
+// CN pill: no permet deixar un bloc actiu sense cap canal
+function toggleCn(el) {
+  const block = el.closest('.ta-block');
+  if (!block.querySelector('.ta-type-btn').classList.contains('active-ta')) return;
+  if (el.classList.contains('active-cn') && activeChOf(block.id).length <= 1) return;
+  el.classList.toggle('active-cn');
+}
+
+// Toggle d'àudio — amb lògica bidireccional
+function toggleAudioSwitch(el) {
+  el.classList.toggle('tog-off');
+  const isOn = !el.classList.contains('tog-off');
+  if (!isOn) {
+    // Apagar → desactiva tots els blocs TA i neteja tots els canals
+    document.querySelectorAll('.ta-type-btn').forEach(b => b.classList.remove('active-ta'));
+    document.querySelectorAll('.ta-channels').forEach(c => c.classList.add('disabled'));
+    document.querySelectorAll('.cn-pill').forEach(p => p.classList.remove('active-cn'));
+  } else {
+    // Encendre → si no hi ha cap actiu, activa MIX amb 2_0
+    if (document.querySelectorAll('.ta-type-btn.active-ta').length === 0) {
+      const mixBtn = document.querySelector('#block-MIX .ta-type-btn');
+      mixBtn.classList.add('active-ta');
+      document.querySelector('#block-MIX .ta-channels').classList.remove('disabled');
+      setDefaultCh('block-MIX');
+    }
+  }
+}
+
+// Toggle switch on/off genèric (vídeo + extensió)
+function toggleSwitch(el) { el.classList.toggle('tog-off'); }
+
+// Normalitza el títol: espais → _ i tot majúscules
+function normalizeTitol(el) {
+  el.value = el.value.trim().replace(/\s+/g, '_').toUpperCase();
+}
+
+// Generic toggle (multi-select pills)
+function toggle(el, cls) {
+  el.classList.toggle(cls);
+}
+
+// FMT: single select, enables/disables SER fields
+function toggleFmt(el, val) {
+  document.querySelectorAll('.form-section.fmt .pill').forEach(p => p.classList.remove('active-fmt'));
+  el.classList.add('active-fmt');
+  const isSer = val === 'SER';
+  ['ser-tmp','ser-from','ser-to'].forEach(id => {
+    document.getElementById(id).disabled = !isSer;
+  });
+}
+
+// L/S: single select
+function toggleSingle(el, cls, selector) {
+  document.querySelectorAll(selector || '.'+cls).forEach(p => p.classList.remove(cls));
+  el.classList.add(cls);
+}
+
+// Versió: clamp 1-99 mentre s'escriu
+function clampVer(el) {
+  if (el.value === '') return;
+  const v = parseInt(el.value);
+  if (v > 99) el.value = 99;
+  else if (v < 1) el.value = 1;
+}
+
+// Language: 3-state cycle (gray → green/ALT → orange/PIN → gray)
+function cycleLang(el) {
+  const pins = document.querySelectorAll('.lang-btn.pin').length;
+  if (!el.classList.contains('sel') && !el.classList.contains('pin')) {
+    // gray → green
+    el.classList.add('sel');
+  } else if (el.classList.contains('sel')) {
+    // green → orange (PIN), only if < 2 pins
+    if (pins < 2) {
+      el.classList.remove('sel');
+      el.classList.add('pin');
+    }
+    // if 2 pins already, green → gray directly
+    else {
+      el.classList.remove('sel');
+    }
+  } else if (el.classList.contains('pin')) {
+    // orange → gray
+    el.classList.remove('pin');
+  }
+}
+</script>
+</body>
+</html>

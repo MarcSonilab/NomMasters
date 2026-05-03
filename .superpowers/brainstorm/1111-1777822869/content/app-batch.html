@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<title>NomsMasters — Tab 3: Renombrar per lots</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 20px; }
+
+.tabbar { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 2px solid #333; }
+.tab { padding: 8px 20px; cursor: pointer; border-radius: 6px 6px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: #888; background: #222; border: 1px solid #333; border-bottom: none; }
+.tab.active { background: #16213e; color: #60a5fa; border-color: #60a5fa; }
+
+.app-window { background: #16213e; border-radius: 10px; border: 1px solid #2a3a5e; padding: 20px; max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #555; margin-bottom: 6px; }
+
+/* ── Inputs row ── */
+.inputs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.input-panel {
+  background: #0f3460;
+  border-radius: 8px;
+  padding: 12px 14px;
+  border-left: 3px solid #3b82f6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.input-panel.folder-panel { border-color: #4ade80; }
+
+.drop-zone-small {
+  border: 2px dashed #1e3a5f;
+  border-radius: 7px;
+  background: #0a1628;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.drop-zone-small:hover { border-color: #3b82f6; }
+.drop-zone-small.loaded { border-color: #166534; border-style: solid; background: #0a1a10; }
+
+.dz-icon { font-size: 20px; }
+.dz-text { font-size: 11px; color: #4a6a8a; text-align: center; }
+.dz-text strong { color: #60a5fa; }
+.dz-loaded { font-size: 11px; color: #4ade80; font-family: 'Consolas', monospace; }
+
+.btn-pick {
+  padding: 6px 14px;
+  background: #1e3a5f;
+  border: 1px solid #3b82f6;
+  border-radius: 5px;
+  color: #60a5fa;
+  font-size: 11px;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.btn-pick.green { border-color: #4ade80; color: #4ade80; background: #0a1a10; }
+.btn-pick:hover { background: #253f6e; }
+.btn-pick.green:hover { background: #0d2215; }
+
+.folder-path {
+  font-family: 'Consolas', monospace;
+  font-size: 11px;
+  color: #4ade80;
+  background: #0a1a10;
+  border: 1px solid #166534;
+  border-radius: 5px;
+  padding: 6px 10px;
+  word-break: break-all;
+}
+
+/* ── Stats bar ── */
+.stats-bar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #0a1628;
+  border-radius: 6px;
+  padding: 8px 14px;
+  flex-wrap: wrap;
+}
+.stat { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-total  { background: #60a5fa; }
+.dot-ok     { background: #4ade80; }
+.dot-miss   { background: #f87171; }
+.dot-done   { background: #a78bfa; }
+.stat-num { font-weight: 700; color: #fff; }
+.stat-sep { color: #1e3a5f; }
+
+/* ── Preview table ── */
+.preview-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.preview-table th {
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #555;
+  padding: 5px 10px;
+  border-bottom: 1px solid #1e3a5f;
+}
+.preview-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #0d1a2e;
+  font-family: 'Consolas', monospace;
+  vertical-align: middle;
+}
+.preview-table tr:last-child td { border-bottom: none; }
+
+/* Row status backgrounds */
+.row-ok   td { background: #04110a; }
+.row-miss td { background: #120404; }
+.row-done td { background: #0a0814; }
+.row-warn td { background: #12100a; }
+
+.preview-table tr:hover td { filter: brightness(1.3); }
+
+.arrow-col { color: #2a4a6e; font-size: 14px; width: 30px; text-align: center; }
+
+.name-orig { color: #9ca3af; }
+.name-new  { color: #e0e0e0; }
+
+/* Status badge */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.badge-ok   { background: #052e16; border: 1px solid #166534; color: #4ade80; }
+.badge-miss { background: #1a0505; border: 1px solid #7f1d1d; color: #f87171; }
+.badge-done { background: #0d0a1f; border: 1px solid #4c1d95; color: #a78bfa; }
+.badge-warn { background: #1a1200; border: 1px solid #78350f; color: #fbbf24; }
+
+.row-num { color: #334; font-size: 10px; width: 28px; }
+
+/* ── Bottom action bar ── */
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+.btn-rename {
+  flex: 1;
+  padding: 11px;
+  background: linear-gradient(135deg, #166534, #15803d);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-rename:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #374151;
+}
+.btn-export {
+  padding: 11px 18px;
+  background: #1e3a5f;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  color: #60a5fa;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.action-note { font-size: 10px; color: #555; }
+</style>
+</head>
+<body>
+<div style="max-width:960px;margin:0 auto;">
+  <div style="margin-bottom:12px;">
+    <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:1px;">NomsMasters</div>
+    <div style="font-size:11px;color:#555;margin-top:2px;">Generador i desxifrador de nomenclatura de màsters</div>
+  </div>
+
+  <div class="tabbar">
+    <div class="tab">① Crear noms</div>
+    <div class="tab">② Desxifrar nom</div>
+    <div class="tab active">③ Renombrar per lots</div>
+  </div>
+
+  <div class="app-window">
+
+    <!-- ── Inputs: CSV + Carpeta ── -->
+    <div class="inputs-row">
+
+      <!-- CSV -->
+      <div class="input-panel">
+        <div class="section-label">1 · Fitxer CSV</div>
+        <div class="folder-path">D:\Projectes\1983_BabaYaga\Masters\renoms_baba_yaga.csv</div>
+        <button class="btn-pick">📄 Canviar CSV…</button>
+        <div style="font-size:10px;color:#334;">Format: nom_original,nom_nou · una fila per fitxer · arrossega el CSV o selecciona'l</div>
+      </div>
+
+      <!-- Carpeta -->
+      <div class="input-panel folder-panel">
+        <div class="section-label">2 · Carpeta dels fitxers</div>
+        <div class="folder-path">D:\Projectes\1983_BabaYaga\Masters\</div>
+        <button class="btn-pick green">📁 Canviar carpeta…</button>
+        <div style="font-size:10px;color:#334;">Els fitxers s'han de trobar directament dins la carpeta</div>
+      </div>
+
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-dot dot-total"></div>
+        <span class="stat-num">6</span>
+        <span style="color:#555">files al CSV</span>
+      </div>
+      <span class="stat-sep">·</span>
+      <div class="stat">
+        <div class="stat-dot dot-ok"></div>
+        <span class="stat-num">4</span>
+        <span style="color:#4ade80">trobats</span>
+      </div>
+      <span class="stat-sep">·</span>
+      <div class="stat">
+        <div class="stat-dot dot-miss"></div>
+        <span class="stat-num">1</span>
+        <span style="color:#f87171">no trobat</span>
+      </div>
+      <span class="stat-sep">·</span>
+      <div class="stat">
+        <div class="stat-dot dot-done"></div>
+        <span class="stat-num">1</span>
+        <span style="color:#a78bfa">conflicte de nom</span>
+      </div>
+      <div style="flex:1"></div>
+      <span class="action-note">Es renombraran 4 fitxers</span>
+    </div>
+
+    <!-- ── Preview table ── -->
+    <div style="border:1px solid #1e3a5f;border-radius:8px;overflow:hidden;">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nom original</th>
+            <th></th>
+            <th>Nom nou</th>
+            <th>Estat</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="row-ok">
+            <td class="row-num">1</td>
+            <td class="name-orig">BABA_YAGA-FTR-MASTER-ES-V01.mov</td>
+            <td class="arrow-col">→</td>
+            <td class="name-new">1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-GRA-S-XXX-V01.mov</td>
+            <td><span class="badge-status badge-ok">✓ Trobat</span></td>
+          </tr>
+
+          <tr class="row-ok">
+            <td class="row-num">2</td>
+            <td class="name-orig">BABA_YAGA-FTR-MASTER-EN-V01.mov</td>
+            <td class="arrow-col">→</td>
+            <td class="name-new">1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-EN-ALT-GRA-S-XXX-V01.mov</td>
+            <td><span class="badge-status badge-ok">✓ Trobat</span></td>
+          </tr>
+
+          <tr class="row-ok">
+            <td class="row-num">3</td>
+            <td class="name-orig">BABA_YAGA-FTR-MASTER-ES-MIX20-V01.wav</td>
+            <td class="arrow-col">→</td>
+            <td class="name-new">1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-XXX-S-MIX_2_0-V01.wav</td>
+            <td><span class="badge-status badge-ok">✓ Trobat</span></td>
+          </tr>
+
+          <tr class="row-ok">
+            <td class="row-num">4</td>
+            <td class="name-orig">BABA_YAGA-FTR-MASTER-ES-MIX51-V01.wav</td>
+            <td class="arrow-col">→</td>
+            <td class="name-new">1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-XXX-S-MIX_5_1-V01.wav</td>
+            <td><span class="badge-status badge-ok">✓ Trobat</span></td>
+          </tr>
+
+          <tr class="row-miss">
+            <td class="row-num">5</td>
+            <td class="name-orig">BABA_YAGA-FTR-DCP-ES-V01.mov</td>
+            <td class="arrow-col" style="color:#4a1010;">→</td>
+            <td class="name-new" style="color:#555;">1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-DCP-ES-ORG-GRA-S-XXX-V01.mov</td>
+            <td><span class="badge-status badge-miss">✗ No trobat</span></td>
+          </tr>
+
+          <tr class="row-warn">
+            <td class="row-num">6</td>
+            <td class="name-orig">BABA_YAGA-FTR-MASTER-EN-MIX20-V01.wav</td>
+            <td class="arrow-col" style="color:#4a3500;">→</td>
+            <td class="name-new" style="color:#9ca3af;">1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-EN-ALT-XXX-S-MIX_2_0-V01.wav</td>
+            <td><span class="badge-status badge-warn">⚠ Nom ja existeix</span></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Action bar ── -->
+    <div class="action-bar">
+      <button class="btn-rename">✅ Renombrar 4 fitxers trobats</button>
+      <button class="btn-export">📋 Exportar log</button>
+    </div>
+    <div class="action-note" style="text-align:center;">Els fitxers no trobats i els conflictes s'ignoraran · l'acció no es pot desfer</div>
+
+  </div>
+</div>
+</body>
+</html>

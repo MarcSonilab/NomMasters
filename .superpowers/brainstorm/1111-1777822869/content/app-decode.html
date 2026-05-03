@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<title>NomsMasters — Tab 2: Desxifrar nom</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 20px; }
+
+.tabbar { display: flex; gap: 2px; margin-bottom: 20px; border-bottom: 2px solid #333; }
+.tab { padding: 8px 20px; cursor: pointer; border-radius: 6px 6px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: #888; background: #222; border: 1px solid #333; border-bottom: none; }
+.tab.active { background: #16213e; color: #60a5fa; border-color: #60a5fa; }
+
+.app-window { background: #16213e; border-radius: 10px; border: 1px solid #2a3a5e; padding: 20px; max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Drop zone ── */
+.drop-zone {
+  border: 2px dashed #2a4a6e;
+  border-radius: 10px;
+  background: #0a1628;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.drop-zone.drag-over {
+  border-color: #60a5fa;
+  background: #0d1f3a;
+}
+.drop-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #4a6a8a;
+  font-size: 12px;
+}
+.drop-icon { font-size: 22px; }
+.drop-text { font-size: 12px; color: #4a6a8a; }
+.drop-text strong { color: #60a5fa; }
+
+.filename-input {
+  width: 100%;
+  background: #070d1a;
+  border: 1px solid #1e3a5f;
+  border-radius: 6px;
+  color: #e0e0e0;
+  padding: 8px 12px;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  outline: none;
+}
+.filename-input:focus { border-color: #3b82f6; }
+.filename-input::placeholder { color: #334; }
+
+.btn-decode {
+  padding: 10px;
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  border: none; border-radius: 8px;
+  color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; width: 100%;
+}
+
+/* ── Nom desglossat ── */
+.result-name-box {
+  background: #070d1a;
+  border: 1px solid #1e3a5f;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'Consolas', monospace;
+  font-size: 12px;
+  display: flex; flex-wrap: wrap; gap: 2px; align-items: center;
+}
+.seg { padding: 2px 6px; border-radius: 3px; font-weight: 600; }
+.s-sep { color: #555; }
+.s-ref { background: #312e81; color: #a5b4fc; }
+.s-tit { background: #7c2d12; color: #fdba74; }
+.s-fmt { background: #14532d; color: #86efac; }
+.s-prf { background: #164e63; color: #67e8f9; }
+.s-idi { background: #831843; color: #fbcfe8; }
+.s-ver { background: #713f12; color: #fde68a; }
+.s-vis { background: #4c1d95; color: #ddd6fe; }
+.s-ls  { background: #1e1b4b; color: #a5b4fc; }
+.s-ta  { background: #7f1d1d; color: #fca5a5; }
+.s-vxx { background: #1f2937; color: #9ca3af; }
+.s-ext { background: #111827; color: #6b7280; }
+
+/* ── Cards de camps ── */
+.fields-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.field-card {
+  border-radius: 7px;
+  padding: 10px 12px;
+  background: #0a1628;
+  border-left: 3px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.field-code {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.field-value {
+  font-family: 'Consolas', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+.field-desc {
+  font-size: 10px;
+  color: #555;
+}
+
+/* Colors de cada camp */
+.fc-ref  { border-color: #4c1d95; }  .fc-ref  .field-code { color: #a5b4fc; }
+.fc-tit  { border-color: #92400e; }  .fc-tit  .field-code { color: #fdba74; }
+.fc-fmt  { border-color: #166534; }  .fc-fmt  .field-code { color: #86efac; }
+.fc-tmp  { border-color: #166534; }  .fc-tmp  .field-code { color: #86efac; }
+.fc-prf  { border-color: #155e75; }  .fc-prf  .field-code { color: #67e8f9; }
+.fc-idi  { border-color: #9d174d; }  .fc-idi  .field-code { color: #fbcfe8; }
+.fc-ver  { border-color: #92400e; }  .fc-ver  .field-code { color: #fde68a; }
+.fc-vis  { border-color: #5b21b6; }  .fc-vis  .field-code { color: #ddd6fe; }
+.fc-ls   { border-color: #3730a3; }  .fc-ls   .field-code { color: #a5b4fc; }
+.fc-ta   { border-color: #991b1b; }  .fc-ta   .field-code { color: #fca5a5; }
+.fc-vxx  { border-color: #374151; }  .fc-vxx  .field-code { color: #9ca3af; }
+.fc-ext  { border-color: #1f2937; }  .fc-ext  .field-code { color: #6b7280; }
+
+/* ── Error card ── */
+.error-card {
+  background: #1a0a0a;
+  border: 1px solid #7f1d1d;
+  border-radius: 7px;
+  padding: 10px 14px;
+  color: #fca5a5;
+  font-size: 11px;
+  display: none;
+}
+
+/* Section label */
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #555; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<div style="max-width:960px;margin:0 auto;">
+  <div style="margin-bottom:12px;">
+    <div style="font-size:18px;font-weight:700;color:#fff;letter-spacing:1px;">NomsMasters</div>
+    <div style="font-size:11px;color:#555;margin-top:2px;">Generador i desxifrador de nomenclatura de màsters</div>
+  </div>
+
+  <div class="tabbar">
+    <div class="tab">① Crear noms</div>
+    <div class="tab active">② Desxifrar nom</div>
+    <div class="tab">③ Renombrar per lots</div>
+  </div>
+
+  <div class="app-window">
+
+    <!-- ── Zona d'entrada ── -->
+    <div class="drop-zone" id="drop-zone">
+      <div class="drop-hint">
+        <span class="drop-icon">📂</span>
+        <span class="drop-text">Arrossega un fitxer aquí, o <strong>enganxa el nom a sota</strong></span>
+      </div>
+      <input
+        class="filename-input"
+        id="filename-input"
+        type="text"
+        placeholder="ex: 1983-N-BABA_YAGA-N-FTR-MASTER-ES-ORG-GRA-S-XXX-V01.mov"
+        value="1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-GRA-S-XXX-V01.mov"
+      />
+      <div style="font-size:10px;color:#334;text-align:center;">Accepta qualsevol text amb format de nomenclatura — el fitxer no es mou ni modifica</div>
+    </div>
+
+    <button class="btn-decode">🔍 DESXIFRAR NOM</button>
+
+    <!-- ── Nom amb segments de colors ── -->
+    <div>
+      <div class="section-label">Nom original — segments identificats</div>
+      <div class="result-name-box">
+        <span class="seg s-ref">1983</span>
+        <span class="s-sep">-N-</span>
+        <span class="seg s-tit">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span>
+        <span class="s-sep">-N-</span>
+        <span class="seg s-fmt">FTR</span>
+        <span class="s-sep">-</span>
+        <span class="seg s-prf">MASTER</span>
+        <span class="s-sep">-</span>
+        <span class="seg s-idi">ES</span>
+        <span class="s-sep">-</span>
+        <span class="seg s-ver">ORG</span>
+        <span class="s-sep">-</span>
+        <span class="seg s-vis">GRA</span>
+        <span class="s-sep">-</span>
+        <span class="seg s-ls">S</span>
+        <span class="s-sep">-</span>
+        <span class="seg s-ta">XXX</span>
+        <span class="s-sep">-</span>
+        <span class="seg s-vxx">V01</span>
+        <span class="seg s-ext">.mov</span>
+      </div>
+    </div>
+
+    <!-- ── Camp desxifrats ── -->
+    <div>
+      <div class="section-label">Camps desxifrats</div>
+      <div class="fields-grid">
+
+        <div class="field-card fc-ref">
+          <span class="field-code">REF — Referència</span>
+          <span class="field-value">1983</span>
+          <span class="field-desc">Codi intern del projecte</span>
+        </div>
+
+        <div class="field-card fc-tit" style="grid-column: span 2;">
+          <span class="field-code">TÍTOL</span>
+          <span class="field-value">BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS</span>
+          <span class="field-desc">Títol normalitzat (espais → _, majúscules)</span>
+        </div>
+
+        <div class="field-card fc-fmt">
+          <span class="field-code">FMT — Tipus</span>
+          <span class="field-value">FTR</span>
+          <span class="field-desc">Feature — Llargmetratge</span>
+        </div>
+
+        <div class="field-card fc-prf">
+          <span class="field-code">PRF — Perfil</span>
+          <span class="field-value">MASTER</span>
+          <span class="field-desc">Master original de lliurament</span>
+        </div>
+
+        <div class="field-card fc-idi">
+          <span class="field-code">IDI — Idioma</span>
+          <span class="field-value">ES</span>
+          <span class="field-desc">Espanyol</span>
+        </div>
+
+        <div class="field-card fc-ver">
+          <span class="field-code">VER — Versió lingüística</span>
+          <span class="field-value">ORG</span>
+          <span class="field-desc">Original (idioma pinnejat)</span>
+        </div>
+
+        <div class="field-card fc-vis">
+          <span class="field-code">VIS — Estat visual</span>
+          <span class="field-value">GRA</span>
+          <span class="field-desc">Grafismes cremats</span>
+        </div>
+
+        <div class="field-card fc-ls">
+          <span class="field-code">L/S — Longitud</span>
+          <span class="field-value">S</span>
+          <span class="field-desc">Short</span>
+        </div>
+
+        <div class="field-card fc-ta">
+          <span class="field-code">TA · CN — Àudio</span>
+          <span class="field-value">XXX</span>
+          <span class="field-desc">No aplica (arxiu de vídeo)</span>
+        </div>
+
+        <div class="field-card fc-vxx">
+          <span class="field-code">VXX — Versió fitxer</span>
+          <span class="field-value">V01</span>
+          <span class="field-desc">Primera versió del fitxer</span>
+        </div>
+
+        <div class="field-card fc-ext">
+          <span class="field-code">Extensió</span>
+          <span class="field-value">.mov</span>
+          <span class="field-desc">QuickTime Movie — vídeo</span>
+        </div>
+
+        <!-- Targeta info: resum tipus d'arxiu -->
+        <div class="field-card" style="border-color:#1e3a5f;background:#0a1628;">
+          <span class="field-code" style="color:#4a6a8a;">Tipus d'arxiu</span>
+          <span class="field-value" style="color:#60a5fa;">VÍDEO</span>
+          <span class="field-desc">Nomenclatura de vídeo detectada</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Estat: nom de sèrie (exemple col·lapsible) ── -->
+    <details style="background:#0a1628;border:1px dashed #1e3a5f;border-radius:7px;padding:10px 14px;">
+      <summary style="font-size:10px;color:#4a6a8a;cursor:pointer;letter-spacing:0.5px;user-select:none;">
+        Exemple amb sèrie — SER_S01_E0001
+      </summary>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+        <div class="result-name-box">
+          <span class="seg s-ref">LA_CASA</span>
+          <span class="s-sep">-N-</span>
+          <span class="seg s-tit">LA_CASA_DE_PAPEL</span>
+          <span class="s-sep">-N-</span>
+          <span class="seg s-fmt">SER_S01_E0001</span>
+          <span class="s-sep">-</span>
+          <span class="seg s-prf">MASTER</span>
+          <span class="s-sep">-</span>
+          <span class="seg s-idi">ES</span>
+          <span class="s-sep">-</span>
+          <span class="seg s-ver">ORG</span>
+          <span class="s-sep">-</span>
+          <span class="seg s-vis">XXX</span>
+          <span class="s-sep">-</span>
+          <span class="seg s-ls">S</span>
+          <span class="s-sep">-</span>
+          <span class="seg s-ta">MIX_5_1</span>
+          <span class="s-sep">-</span>
+          <span class="seg s-vxx">V01</span>
+          <span class="seg s-ext">.wav</span>
+        </div>
+        <div class="fields-grid">
+          <div class="field-card fc-ref">
+            <span class="field-code">REF — Referència</span>
+            <span class="field-value">LA_CASA</span>
+            <span class="field-desc">Codi intern del projecte</span>
+          </div>
+          <div class="field-card fc-tit" style="grid-column: span 2;">
+            <span class="field-code">TÍTOL</span>
+            <span class="field-value">LA_CASA_DE_PAPEL</span>
+            <span class="field-desc">Títol normalitzat</span>
+          </div>
+          <div class="field-card fc-fmt">
+            <span class="field-code">FMT — Tipus</span>
+            <span class="field-value">SER</span>
+            <span class="field-desc">Sèrie</span>
+          </div>
+          <div class="field-card fc-tmp">
+            <span class="field-code">TMP — Temporada</span>
+            <span class="field-value">S01</span>
+            <span class="field-desc">Temporada 1</span>
+          </div>
+          <div class="field-card fc-tmp">
+            <span class="field-code">EPI — Episodi</span>
+            <span class="field-value">E0001</span>
+            <span class="field-desc">Episodi 1</span>
+          </div>
+          <div class="field-card fc-prf">
+            <span class="field-code">PRF — Perfil</span>
+            <span class="field-value">MASTER</span>
+            <span class="field-desc">Master original de lliurament</span>
+          </div>
+          <div class="field-card fc-idi">
+            <span class="field-code">IDI — Idioma</span>
+            <span class="field-value">ES</span>
+            <span class="field-desc">Espanyol</span>
+          </div>
+          <div class="field-card fc-ver">
+            <span class="field-code">VER — Versió lingüística</span>
+            <span class="field-value">ORG</span>
+            <span class="field-desc">Original (idioma pinnejat)</span>
+          </div>
+          <div class="field-card fc-vis">
+            <span class="field-code">VIS — Estat visual</span>
+            <span class="field-value">XXX</span>
+            <span class="field-desc">Àudio — sempre sense modificació</span>
+          </div>
+          <div class="field-card fc-ls">
+            <span class="field-code">L/S — Longitud</span>
+            <span class="field-value">S</span>
+            <span class="field-desc">Short</span>
+          </div>
+          <div class="field-card fc-ta">
+            <span class="field-code">TA · CN — Àudio</span>
+            <span class="field-value">MIX_5_1</span>
+            <span class="field-desc">Mescla · 5.1 canals</span>
+          </div>
+          <div class="field-card fc-vxx">
+            <span class="field-code">VXX — Versió fitxer</span>
+            <span class="field-value">V01</span>
+            <span class="field-desc">Primera versió del fitxer</span>
+          </div>
+          <div class="field-card fc-ext">
+            <span class="field-code">Extensió</span>
+            <span class="field-value">.wav</span>
+            <span class="field-desc">Audio — WAVE</span>
+          </div>
+          <div class="field-card" style="border-color:#1e3a5f;background:#0a1628;">
+            <span class="field-code" style="color:#4a6a8a;">Tipus d'arxiu</span>
+            <span class="field-value" style="color:#f87171;">ÀUDIO</span>
+            <span class="field-desc">Nomenclatura d'àudio detectada</span>
+          </div>
+        </div>
+      </div>
+    </details>
+
+  </div>
+</div>
+
+<script>
+/* Drag & drop — efecte visual sobre la drop zone */
+var zone = document.getElementById('drop-zone');
+var inp  = document.getElementById('filename-input');
+
+zone.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  zone.classList.add('drag-over');
+});
+zone.addEventListener('dragleave', function() {
+  zone.classList.remove('drag-over');
+});
+zone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  var files = e.dataTransfer.files;
+  if (files.length > 0) {
+    inp.value = files[0].name;
+  }
+});
+</script>
+</body>
+</html>
