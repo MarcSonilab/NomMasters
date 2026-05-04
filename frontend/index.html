@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NomsMasters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel">
+const __TWEAKS_STYLE = `
+  .twk-panel{position:fixed;right:16px;bottom:16px;z-index:2147483646;width:280px;
+    max-height:calc(100vh - 32px);display:flex;flex-direction:column;
+    background:rgba(250,249,247,.78);color:#29261b;
+    -webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);
+    border:.5px solid rgba(255,255,255,.6);border-radius:14px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 12px 40px rgba(0,0,0,.18);
+    font:11.5px/1.4 ui-sans-serif,system-ui,-apple-system,sans-serif;overflow:hidden}
+  .twk-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 8px 10px 14px;cursor:move;user-select:none}
+  .twk-hd b{font-size:12px;font-weight:600;letter-spacing:.01em}
+  .twk-x{appearance:none;border:0;background:transparent;color:rgba(41,38,27,.55);
+    width:22px;height:22px;border-radius:6px;cursor:default;font-size:13px;line-height:1}
+  .twk-x:hover{background:rgba(0,0,0,.06);color:#29261b}
+  .twk-body{padding:2px 14px 14px;display:flex;flex-direction:column;gap:10px;
+    overflow-y:auto;overflow-x:hidden;min-height:0;
+    scrollbar-width:thin;scrollbar-color:rgba(0,0,0,.15) transparent}
+  .twk-body::-webkit-scrollbar{width:8px}
+  .twk-body::-webkit-scrollbar-track{background:transparent;margin:2px}
+  .twk-body::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px;
+    border:2px solid transparent;background-clip:content-box}
+  .twk-body::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25);
+    border:2px solid transparent;background-clip:content-box}
+  .twk-row{display:flex;flex-direction:column;gap:5px}
+  .twk-row-h{flex-direction:row;align-items:center;justify-content:space-between;gap:10px}
+  .twk-lbl{display:flex;justify-content:space-between;align-items:baseline;
+    color:rgba(41,38,27,.72)}
+  .twk-lbl>span:first-child{font-weight:500}
+  .twk-val{color:rgba(41,38,27,.5);font-variant-numeric:tabular-nums}
+  .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:rgba(41,38,27,.45);padding:10px 0 0}
+  .twk-sect:first-child{padding-top:0}
+  .twk-field{appearance:none;width:100%;height:26px;padding:0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;
+    background:rgba(255,255,255,.6);color:inherit;font:inherit;outline:none}
+  .twk-field:focus{border-color:rgba(0,0,0,.25);background:rgba(255,255,255,.85)}
+  select.twk-field{padding-right:22px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(0,0,0,.5)' d='M0 0h10L5 6z'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center}
+  .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;
+    border-radius:999px;background:rgba(0,0,0,.12);outline:none}
+  .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:14px;height:14px;border-radius:50%;background:#fff;
+    border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+    background:#fff;border:.5px solid rgba(0,0,0,.12);box-shadow:0 1px 3px rgba(0,0,0,.2);cursor:default}
+  .twk-seg{position:relative;display:flex;padding:2px;border-radius:8px;
+    background:rgba(0,0,0,.06);user-select:none}
+  .twk-seg-thumb{position:absolute;top:2px;bottom:2px;border-radius:6px;
+    background:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(0,0,0,.12);
+    transition:left .15s cubic-bezier(.3,.7,.4,1),width .15s}
+  .twk-seg.dragging .twk-seg-thumb{transition:none}
+  .twk-seg button{appearance:none;position:relative;z-index:1;flex:1;border:0;
+    background:transparent;color:inherit;font:inherit;font-weight:500;min-height:22px;
+    border-radius:6px;cursor:default;padding:4px 6px;line-height:1.2;overflow-wrap:anywhere}
+  .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;
+    background:rgba(0,0,0,.15);transition:background .15s;cursor:default;padding:0}
+  .twk-toggle[data-on="1"]{background:#34c759}
+  .twk-toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:transform .15s}
+  .twk-toggle[data-on="1"] i{transform:translateX(14px)}
+  .twk-num{display:flex;align-items:center;height:26px;padding:0 0 0 8px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:7px;background:rgba(255,255,255,.6)}
+  .twk-num-lbl{font-weight:500;color:rgba(41,38,27,.6);cursor:ew-resize;user-select:none;padding-right:8px}
+  .twk-num input{flex:1;min-width:0;height:100%;border:0;background:transparent;
+    font:inherit;font-variant-numeric:tabular-nums;text-align:right;padding:0 8px 0 0;
+    outline:none;color:inherit;-moz-appearance:textfield}
+  .twk-num input::-webkit-inner-spin-button,.twk-num input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+  .twk-num-unit{padding-right:8px;color:rgba(41,38,27,.45)}
+  .twk-btn{appearance:none;height:26px;padding:0 12px;border:0;border-radius:7px;
+    background:rgba(0,0,0,.78);color:#fff;font:inherit;font-weight:500;cursor:default}
+  .twk-btn:hover{background:rgba(0,0,0,.88)}
+  .twk-btn.secondary{background:rgba(0,0,0,.06);color:inherit}
+  .twk-btn.secondary:hover{background:rgba(0,0,0,.1)}
+  .twk-swatch{appearance:none;-webkit-appearance:none;width:56px;height:22px;
+    border:.5px solid rgba(0,0,0,.1);border-radius:6px;padding:0;cursor:default;
+    background:transparent;flex-shrink:0}
+  .twk-swatch::-webkit-color-swatch-wrapper{padding:0}
+  .twk-swatch::-webkit-color-swatch{border:0;border-radius:5.5px}
+  .twk-swatch::-moz-color-swatch{border:0;border-radius:5.5px}
+`;
+function useTweaks(defaults) {
+  const [values, setValues] = React.useState(defaults);
+  const setTweak = React.useCallback((keyOrEdits, val) => {
+    const edits = typeof keyOrEdits === 'object' && keyOrEdits !== null ? keyOrEdits : { [keyOrEdits]: val };
+    setValues((prev) => ({ ...prev, ...edits }));
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits }, '*');
+  }, []);
+  return [values, setTweak];
+}
+function TweaksPanel({ title = 'Tweaks', children }) {
+  const [open, setOpen] = React.useState(false);
+  const dragRef = React.useRef(null);
+  const offsetRef = React.useRef({ x: 16, y: 16 });
+  const PAD = 16;
+  const clampToViewport = React.useCallback(() => {
+    const panel = dragRef.current; if (!panel) return;
+    const w = panel.offsetWidth, h = panel.offsetHeight;
+    const maxRight = Math.max(PAD, window.innerWidth - w - PAD);
+    const maxBottom = Math.max(PAD, window.innerHeight - h - PAD);
+    offsetRef.current = { x: Math.min(maxRight, Math.max(PAD, offsetRef.current.x)), y: Math.min(maxBottom, Math.max(PAD, offsetRef.current.y)) };
+    panel.style.right = offsetRef.current.x + 'px'; panel.style.bottom = offsetRef.current.y + 'px';
+  }, []);
+  React.useEffect(() => {
+    if (!open) return; clampToViewport();
+    if (typeof ResizeObserver === 'undefined') { window.addEventListener('resize', clampToViewport); return () => window.removeEventListener('resize', clampToViewport); }
+    const ro = new ResizeObserver(clampToViewport); ro.observe(document.documentElement); return () => ro.disconnect();
+  }, [open, clampToViewport]);
+  React.useEffect(() => {
+    const onMsg = (e) => { const t = e?.data?.type; if (t === '__activate_edit_mode') setOpen(true); else if (t === '__deactivate_edit_mode') setOpen(false); };
+    window.addEventListener('message', onMsg); window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+  const dismiss = () => { setOpen(false); window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); };
+  const onDragStart = (e) => {
+    const panel = dragRef.current; if (!panel) return;
+    const r = panel.getBoundingClientRect(); const sx = e.clientX, sy = e.clientY;
+    const startRight = window.innerWidth - r.right; const startBottom = window.innerHeight - r.bottom;
+    const move = (ev) => { offsetRef.current = { x: startRight - (ev.clientX - sx), y: startBottom - (ev.clientY - sy) }; clampToViewport(); };
+    const up = () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
+    window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+  };
+  if (!open) return null;
+  return (<><style>{__TWEAKS_STYLE}</style><div ref={dragRef} className="twk-panel" data-noncommentable="" style={{ right: offsetRef.current.x, bottom: offsetRef.current.y }}><div className="twk-hd" onMouseDown={onDragStart}><b>{title}</b><button className="twk-x" aria-label="Close tweaks" onMouseDown={(e) => e.stopPropagation()} onClick={dismiss}>✕</button></div><div className="twk-body">{children}</div></div></>);
+}
+function TweakSection({ label, children }) { return (<><div className="twk-sect">{label}</div>{children}</>); }
+function TweakRow({ label, value, children, inline = false }) {
+  return (<div className={inline ? 'twk-row twk-row-h' : 'twk-row'}><div className="twk-lbl"><span>{label}</span>{value != null && <span className="twk-val">{value}</span>}</div>{children}</div>);
+}
+function TweakSlider({ label, value, min = 0, max = 100, step = 1, unit = '', onChange }) {
+  return (<TweakRow label={label} value={`${value}${unit}`}><input type="range" className="twk-slider" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} /></TweakRow>);
+}
+function TweakToggle({ label, value, onChange }) {
+  return (<div className="twk-row twk-row-h"><div className="twk-lbl"><span>{label}</span></div><button type="button" className="twk-toggle" data-on={value ? '1' : '0'} role="switch" aria-checked={!!value} onClick={() => onChange(!value)}><i /></button></div>);
+}
+function TweakRadio({ label, value, options, onChange }) {
+  const trackRef = React.useRef(null); const [dragging, setDragging] = React.useState(false);
+  const opts = options.map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+  const idx = Math.max(0, opts.findIndex((o) => o.value === value)); const n = opts.length;
+  const valueRef = React.useRef(value); valueRef.current = value;
+  const segAt = (clientX) => { const r = trackRef.current.getBoundingClientRect(); const inner = r.width - 4; const i = Math.floor(((clientX - r.left - 2) / inner) * n); return opts[Math.max(0, Math.min(n - 1, i))].value; };
+  const onPointerDown = (e) => {
+    setDragging(true); const v0 = segAt(e.clientX); if (v0 !== valueRef.current) onChange(v0);
+    const move = (ev) => { if (!trackRef.current) return; const v = segAt(ev.clientX); if (v !== valueRef.current) onChange(v); };
+    const up = () => { setDragging(false); window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
+  return (<TweakRow label={label}><div ref={trackRef} role="radiogroup" onPointerDown={onPointerDown} className={dragging ? 'twk-seg dragging' : 'twk-seg'}><div className="twk-seg-thumb" style={{ left: `calc(2px + ${idx} * (100% - 4px) / ${n})`, width: `calc((100% - 4px) / ${n})` }} />{opts.map((o) => (<button key={o.value} type="button" role="radio" aria-checked={o.value === value}>{o.label}</button>))}</div></TweakRow>);
+}
+function TweakSelect({ label, value, options, onChange }) {
+  return (<TweakRow label={label}><select className="twk-field" value={value} onChange={(e) => onChange(e.target.value)}>{options.map((o) => { const v = typeof o === 'object' ? o.value : o; const l = typeof o === 'object' ? o.label : o; return <option key={v} value={v}>{l}</option>; })}</select></TweakRow>);
+}
+function TweakText({ label, value, placeholder, onChange }) {
+  return (<TweakRow label={label}><input className="twk-field" type="text" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} /></TweakRow>);
+}
+function TweakNumber({ label, value, min, max, step = 1, unit = '', onChange }) {
+  const clamp = (n) => { if (min != null && n < min) return min; if (max != null && n > max) return max; return n; };
+  const startRef = React.useRef({ x: 0, val: 0 });
+  const onScrubStart = (e) => {
+    e.preventDefault(); startRef.current = { x: e.clientX, val: value };
+    const decimals = (String(step).split('.')[1] || '').length;
+    const move = (ev) => { const dx = ev.clientX - startRef.current.x; const raw = startRef.current.val + dx * step; const snapped = Math.round(raw / step) * step; onChange(clamp(Number(snapped.toFixed(decimals)))); };
+    const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+    window.addEventListener('pointermove', move); window.addEventListener('pointerup', up);
+  };
+  return (<div className="twk-num"><span className="twk-num-lbl" onPointerDown={onScrubStart}>{label}</span><input type="number" value={value} min={min} max={max} step={step} onChange={(e) => onChange(clamp(Number(e.target.value)))} />{unit && <span className="twk-num-unit">{unit}</span>}</div>);
+}
+function TweakColor({ label, value, onChange }) {
+  return (<div className="twk-row twk-row-h"><div className="twk-lbl"><span>{label}</span></div><input type="color" className="twk-swatch" value={value} onChange={(e) => onChange(e.target.value)} /></div>);
+}
+function TweakButton({ label, onClick, secondary = false }) {
+  return (<button type="button" className={secondary ? 'twk-btn secondary' : 'twk-btn'} onClick={onClick}>{label}</button>);
+}
+Object.assign(window, { useTweaks, TweaksPanel, TweakSection, TweakRow, TweakSlider, TweakToggle, TweakRadio, TweakSelect, TweakText, TweakNumber, TweakColor, TweakButton });
+</script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg0: #1c1c2a;
+  --bg1: #22223a;
+  --bg2: #282840;
+  --bg3: #2e2e4a;
+  --surface: #252538;
+  --surface2: #2c2c45;
+  --border: rgba(255,255,255,0.11);
+  --border-bright: rgba(255,255,255,0.20);
+  --text: #f2f2fc;
+  --text-2: #aaaac8;
+  --text-3: #7070a0;
+  --accent: #7c7ff5;
+  --accent-2: #a5a8ff;
+  --accent-dim: rgba(124,127,245,0.12);
+  --accent-glow: rgba(124,127,245,0.25);
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.05) inset;
+  --shadow-btn: 0 2px 8px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(0,0,0,0.3) inset;
+  --shadow-btn-press: 0 1px 3px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.06) inset;
+}
+
+html, body { height: 100%; }
+body { background: linear-gradient(160deg, #1e1e2e 0%, #23192e 100%); }
+body {
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Segment chips ── */
+.seg { padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; letter-spacing: 0.02em; }
+.s-sep { color: var(--text-3); }
+.s-ref { background: rgba(49,46,129,0.8); color: #c4c9ff; border: 1px solid rgba(99,102,241,0.3); }
+.s-tit { background: rgba(124,45,18,0.8); color: #fdc896; border: 1px solid rgba(249,115,22,0.3); }
+.s-fmt { background: rgba(20,83,45,0.8); color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+.s-prf { background: rgba(22,78,99,0.8); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.25); }
+.s-idi { background: rgba(131,24,67,0.8); color: #f9a8d4; border: 1px solid rgba(236,72,153,0.25); }
+.s-ver { background: rgba(113,63,18,0.8); color: #fde68a; border: 1px solid rgba(245,158,11,0.25); }
+.s-vis { background: rgba(76,29,149,0.8); color: #d8b4fe; border: 1px solid rgba(139,92,246,0.3); }
+.s-ls  { background: rgba(30,27,75,0.8); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.2); }
+.s-ta  { background: rgba(127,29,29,0.8); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+.s-vxx { background: rgba(31,41,55,0.8); color: #9ca3af; border: 1px solid rgba(107,114,128,0.2); }
+.s-ext { background: rgba(17,24,39,0.8); color: #6b7280; border: 1px solid rgba(75,85,99,0.2); }
+
+/* ── Field card border colors ── */
+.fc-ref  { --fc-c: rgba(99,102,241,0.5); }
+.fc-tit  { --fc-c: rgba(249,115,22,0.5); }
+.fc-fmt  { --fc-c: rgba(34,197,94,0.4); }
+.fc-tmp  { --fc-c: rgba(34,197,94,0.4); }
+.fc-prf  { --fc-c: rgba(14,165,233,0.4); }
+.fc-idi  { --fc-c: rgba(236,72,153,0.4); }
+.fc-ver  { --fc-c: rgba(245,158,11,0.4); }
+.fc-vis  { --fc-c: rgba(139,92,246,0.4); }
+.fc-ls   { --fc-c: rgba(99,102,241,0.4); }
+.fc-ta   { --fc-c: rgba(239,68,68,0.4); }
+.fc-vxx  { --fc-c: rgba(107,114,128,0.3); }
+.fc-ext  { --fc-c: rgba(75,85,99,0.3); }
+.fc-type { --fc-c: rgba(14,165,233,0.3); }
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes pressIn {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+.fade-up { animation: fadeUp 0.22s cubic-bezier(0.22,1,0.36,1); }
+
+/* ── Inputs ── */
+input[type=text], input[type=number] {
+  background: rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: var(--radius-sm);
+  color: #111;
+  padding: 7px 10px;
+  font-size: 12.5px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08) inset, 0 1px 0 rgba(255,255,255,0.8);
+}
+input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim), 0 1px 3px rgba(0,0,0,0.1) inset;
+}
+input:disabled { opacity: 0.3; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+function _initBridge() {
+  if (typeof QWebChannel !== 'undefined' && typeof qt !== 'undefined') {
+    new QWebChannel(qt.webChannelTransport, function(channel) {
+      window.bridge = channel.objects.bridge;
+    });
+  }
+}
+window.addEventListener('load', _initBridge);
+
+// ─── TWEAK DEFAULTS ───────────────────────────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#b71515",
+  "bgTheme": "slate",
+  "customBg": "",
+  "colorPrf": "#22d3ee",
+  "colorVis": "#a78bfa",
+  "colorFmt": "#4ade80",
+  "colorIdi": "#a6ff00",
+  "colorTA_MIX": "#fecb5d",
+  "colorTA_ME": "#00eeff",
+  "colorTA_DX": "#0ba300",
+  "glowIntensity": "medium",
+  "btnStyle": "gradient",
+  "density": "compact",
+  "showExtension": false,
+  "monoFont": "Courier New"
+}/*EDITMODE-END*/;
+
+// ─── COLOR UTILS ──────────────────────────────────────────────────────────────
+function hexToRgba(hex, a) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function darkenHex(hex, f=0.5) {
+  const h = hex.replace('#','');
+  return `rgb(${Math.round(parseInt(h.slice(0,2),16)*f)},${Math.round(parseInt(h.slice(2,4),16)*f)},${Math.round(parseInt(h.slice(4,6),16)*f)})`;
+}
+
+const BG_THEMES = {
+  zinc:    {bg:'#f4f4f5', card:'rgba(0,0,0,0.04)', border:'rgba(0,0,0,0.08)', dark:false},
+  white:   {bg:'#ffffff', card:'rgba(0,0,0,0.03)', border:'rgba(0,0,0,0.07)', dark:false},
+  slate:   {bg:'#f1f5f9', card:'rgba(0,0,0,0.04)', border:'rgba(0,0,0,0.08)', dark:false},
+  dark:    {bg:'#111111', card:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.09)', dark:true},
+  navy:    {bg:'linear-gradient(160deg,#1e1e2e,#1a1828)', card:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.10)', dark:true},
+  charcoal:{bg:'#1a1a1a', card:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.09)', dark:true},
+};
+
+const GLOW_STRENGTH = { subtle: 0.12, medium: 0.22, strong: 0.38 };
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const LANGS = [
+  {code:'ES',name:'Espanyol'},{code:'EN',name:'Anglès'},{code:'CA',name:'Català'},
+  {code:'EU',name:'Basc'},{code:'FR',name:'Francès'},{code:'RU',name:'Rus'},
+  {code:'ZH',name:'Xinès'},{code:'JA',name:'Japonès'},{code:'NO',name:'Noruec'},
+  {code:'CS',name:'Txec'},{code:'XX',name:'No aplica'},
+];
+const VIS_OPTIONS = [
+  {val:'XXX',tip:'Sense modificació visual'},{val:'GRA',tip:'Grafismes cremats'},
+  {val:'INT',tip:'Inserts cremats'},{val:'SBT',tip:'Subtítols cremats'},
+  {val:'GRA_INT',tip:'Grafismes + Inserts'},{val:'GRA_SBT',tip:'Grafismes + Subtítols'},
+];
+const PRF_OPTIONS = ['MASTER','DCP','BR','SD'];
+const FMT_OPTIONS = [{val:'FTR',tip:'Feature'},{val:'TLR',tip:'Tràiler'},{val:'SPT',tip:'Spot'},{val:'SER',tip:'Sèrie'}];
+const CN_OPTIONS = ['1','2_0','5_1','7_1_4'];
+const TA_BLOCKS = [
+  {id:'MIX',label:'MIX',desc:'Mescla completa',color:'#818cf8',defCh:'2_0'},
+  {id:'ME', label:'ME', desc:'Music & Effects',color:'#34d399',defCh:'2_0'},
+  {id:'DX', label:'DX', desc:'Diàlegs',         color:'#fb923c',defCh:'1'},
+];
+const SEG_COLORS = {
+  REF:{bg:'rgba(49,46,129,0.8)',fg:'#c4c9ff'},TIT:{bg:'rgba(124,45,18,0.8)',fg:'#fdc896'},
+  FMT:{bg:'rgba(20,83,45,0.8)',fg:'#86efac'},PRF:{bg:'rgba(22,78,99,0.8)',fg:'#7dd3fc'},
+  IDI:{bg:'rgba(131,24,67,0.8)',fg:'#f9a8d4'},VER:{bg:'rgba(113,63,18,0.8)',fg:'#fde68a'},
+  VIS:{bg:'rgba(76,29,149,0.8)',fg:'#d8b4fe'},LS:{bg:'rgba(30,27,75,0.8)',fg:'#a5b4fc'},
+  TA:{bg:'rgba(127,29,29,0.8)',fg:'#fca5a5'},VXX:{bg:'rgba(31,41,55,0.8)',fg:'#9ca3af'},
+  EXT:{bg:'rgba(17,24,39,0.8)',fg:'#6b7280'},
+};
+
+// ─── GENERATION LOGIC ─────────────────────────────────────────────────────────
+function buildFmt(fmt, tmp, epiFrom, epiTo, epi) {
+  if (fmt !== 'SER') return fmt;
+  return `SER_S${String(tmp).padStart(2,'0')}_E${String(epi!==undefined?epi:epiFrom).padStart(4,'0')}`;
+}
+function generateNames({ref,titol,fmt,tmp,epiFrom,epiTo,prfs,langs,visuals,length,taBlocks,genVideo,genAudio,inclExt}) {
+  if (!ref||!titol||prfs.length===0||langs.length===0) return [];
+  if (!genVideo&&!genAudio) return [];
+  const vStr = () => 'V' + String(vxx).padStart(2, '0');
+  const episodes = fmt==='SER' ? Array.from({length:epiTo-epiFrom+1},(_,i)=>epiFrom+i) : [null];
+  return episodes.map(epi => {
+    const fmtSeg = buildFmt(fmt,tmp,epiFrom,epiTo,epi);
+    const video=[],audio=[];
+    for (const prf of prfs) for (const lang of langs) {
+      const ver = lang.state==='pin'?'ORG':'ALT';
+      if (genVideo && visuals.length>0) for (const vis of visuals) {
+        const name = `${ref}-N-${titol}-N-${fmtSeg}-${prf}-${lang.code}-${ver}-${vis}-${length}-XXX-${vStr()}${inclExt?'.mov':''}`;
+        video.push({name, segments:[
+          {t:'REF',v:ref},{t:'SEP',v:'-N-'},{t:'TIT',v:titol},{t:'SEP',v:'-N-'},
+          {t:'FMT',v:fmtSeg},{t:'SEP',v:'-'},{t:'PRF',v:prf},{t:'SEP',v:'-'},
+          {t:'IDI',v:lang.code},{t:'SEP',v:'-'},{t:'VER',v:ver},{t:'SEP',v:'-'},
+          {t:'VIS',v:vis},{t:'SEP',v:'-'},{t:'LS',v:length},{t:'SEP',v:'-'},
+          {t:'TA',v:'XXX'},{t:'SEP',v:'-'},{t:'VXX',v:vStr()},
+          ...(inclExt?[{t:'EXT',v:'.mov'}]:[]),
+        ]});
+      }
+      if (genAudio) for (const blk of taBlocks) for (const ch of blk.channels) {
+        const taStr=`${blk.id}_${ch}`;
+        const name=`${ref}-N-${titol}-N-${fmtSeg}-${prf}-${lang.code}-${ver}-XXX-${length}-${taStr}-${vStr()}${inclExt?'.wav':''}`;
+        audio.push({name, segments:[
+          {t:'REF',v:ref},{t:'SEP',v:'-N-'},{t:'TIT',v:titol},{t:'SEP',v:'-N-'},
+          {t:'FMT',v:fmtSeg},{t:'SEP',v:'-'},{t:'PRF',v:prf},{t:'SEP',v:'-'},
+          {t:'IDI',v:lang.code},{t:'SEP',v:'-'},{t:'VER',v:ver},{t:'SEP',v:'-'},
+          {t:'VIS',v:'XXX'},{t:'SEP',v:'-'},{t:'LS',v:length},{t:'SEP',v:'-'},
+          {t:'TA',v:taStr},{t:'SEP',v:'-'},{t:'VXX',v:vStr()},
+          ...(inclExt?[{t:'EXT',v:'.wav'}]:[]),
+        ]});
+      }
+    }
+    return {epi,video,audio};
+  });
+}
+
+// ─── PARSER ───────────────────────────────────────────────────────────────────
+const FMT_VALS=new Set(['FTR','TLR','SPT']);
+const PRF_VALS=new Set(['MASTER','BR','DCP','SD']);
+const VER_VALS=new Set(['ORG','ALT']);
+const LS_VALS=new Set(['S','L']);
+const TA_VALS=new Set(['MIX','ME','DX','XXX']);
+const CN_VALS=new Set(['1','2_0','5_1','7_1_4']);
+const LANG_CODES=new Set(LANGS.map(l=>l.code));
+const VIS_VALS=new Set(['XXX','GRA','INT','SBT','GRA_INT','GRA_SBT']);
+
+function parseName(raw) {
+  if (!raw||!raw.trim()) return null;
+  const result={raw,fields:{},errors:[]};
+  let w=raw.trim();
+  const extM=w.match(/\.(mov|wav|mp4|mxf|aif|aiff|flac)$/i);
+  if (extM) { result.fields.ext=extM[0].toLowerCase(); w=w.slice(0,-extM[0].length); }
+  const nP=w.split('-N-');
+  if (nP.length>=3) { result.fields.ref=nP[0]; result.fields.titol=nP[1]; w=nP.slice(2).join('-N-'); }
+  else if (nP.length===2) { result.fields.ref=nP[0]; w=nP[1]; }
+  else { result.errors.push('No s\'ha trobat el separador -N-'); w=nP[0]; }
+  const segs=w.split('-'); let i=0;
+  if (i<segs.length) {
+    const s=segs[i];
+    if (FMT_VALS.has(s)) { result.fields.fmt=s; i++; }
+    else if (s.startsWith('SER')) {
+      result.fields.fmt='SER';
+      const tm=s.match(/S(\d+)/),em=s.match(/E(\d+)/);
+      if(tm) result.fields.tmp=tm[1]; if(em) result.fields.epi=em[1]; i++;
+    } else { result.errors.push(`FMT: ${s}`); result.fields.fmt='?'; i++; }
+  }
+  const tryField=(set,key)=>{ if(i<segs.length){ if(set.has(segs[i])){result.fields[key]=segs[i++];}else{result.errors.push(`${key.toUpperCase()}: ${segs[i]}`);result.fields[key]=segs[i++];} } };
+  tryField(PRF_VALS,'prf'); tryField(LANG_CODES,'idi'); tryField(VER_VALS,'ver'); tryField(VIS_VALS,'vis'); tryField(LS_VALS,'ls');
+  if (i<segs.length) {
+    const ts=segs[i];
+    if(ts==='XXX'){result.fields.ta='XXX';result.fields.cn=null;i++;}
+    else{ const tp=ts.split('_'); if(TA_VALS.has(tp[0])){result.fields.ta=tp[0];result.fields.cn=tp.slice(1).join('_')||null;i++;}
+    else{result.errors.push(`TA: ${ts}`);result.fields.ta=ts;i++;} }
+  }
+  if (i<segs.length) { const vs=segs[i]; if(/^V\d{2}$/.test(vs)){result.fields.vxx=vs;i++;}else{result.errors.push(`VXX: ${vs}`);result.fields.vxx=vs;i++;} }
+  if (i<segs.length) result.fields.rest=segs.slice(i).join('-');
+  result.fields.type = result.fields.ta==='XXX'?'VÍDEO':result.fields.ta?'ÀUDIO':'?';
+  return result;
+}
+
+// ─── DESIGN TOKENS — initialized from TWEAK_DEFAULTS to avoid flash on first render ──
+const _t0 = BG_THEMES[TWEAK_DEFAULTS.bgTheme] || BG_THEMES.zinc;
+const _d0 = _t0.dark !== false;
+let T = {
+  bg0:'#1c1c2a', bg1:'#22223a', bg2:'#28284a', bg3:'#2e2e4a',
+  surface: _d0 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+  surfaceHover: _d0 ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.07)',
+  border: _d0 ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.10)',
+  borderBright: _d0 ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.18)',
+  text: _d0 ? '#f2f2fc' : '#111112',
+  text2: _d0 ? '#aaaac8' : '#44445a',
+  text3: _d0 ? '#7070a0' : '#8888a0',
+  dark: _d0,
+};
+
+function applyTheme(theme, customBg) {
+  const isDark = theme ? theme.dark : true;
+  const bg = customBg || (theme ? theme.bg : '#1e1e2e');
+  document.body.style.background = bg;
+  if (isDark) {
+    T.text='#f2f2fc'; T.text2='#aaaac8'; T.text3='#7070a0'; T.dark=true;
+    T.surface='rgba(255,255,255,0.05)'; T.border='rgba(255,255,255,0.11)'; T.borderBright='rgba(255,255,255,0.20)';
+  } else {
+    T.text='#111112'; T.text2='#44445a'; T.text3='#8888a0'; T.dark=false;
+    T.surface='rgba(0,0,0,0.04)'; T.border='rgba(0,0,0,0.10)'; T.borderBright='rgba(0,0,0,0.18)';
+  }
+}
+
+// ─── SHARED UI PRIMITIVES ─────────────────────────────────────────────────────
+
+// Modern card — border dinàmic per mode clar/fosc
+function Card({children, style, onClick}) {
+  const [hov, setHov] = useState(false);
+  const isDark = T.dark !== false;
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={()=>setHov(true)}
+      onMouseLeave={()=>setHov(false)}
+      style={{
+        background: isDark
+          ? (hov && onClick ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.05)')
+          : (hov && onClick ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.75)'),
+        border: isDark
+          ? `1px solid ${hov ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.10)'}`
+          : `1px solid ${hov ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.09)'}`,
+        borderTop: isDark
+          ? `1px solid rgba(255,255,255,${hov ? 0.22 : 0.14})`
+          : `1px solid rgba(0,0,0,${hov ? 0.12 : 0.06})`,
+        borderRadius: 10,
+        padding: '11px 14px',
+        boxShadow: isDark
+          ? '0 2px 14px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.07) inset'
+          : '0 1px 8px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset',
+        transition: 'all 0.15s',
+        cursor: onClick ? 'pointer' : undefined,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Glassmorphic name box
+function NameBox({ segments, mono }) {
+  return (
+    <div style={{
+      background: 'rgba(0,0,0,0.20)',
+      border: '1px solid rgba(255,255,255,0.10)',
+      borderRadius: 8,
+      padding: '9px 13px',
+      fontFamily: mono || 'Courier New',
+      fontSize: 11.5,
+      display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center',
+      lineHeight: 1.9,
+      boxShadow: '0 1px 6px rgba(0,0,0,0.25) inset, 0 1px 0 rgba(255,255,255,0.06)',
+    }}>
+      {segments.map((s,i) => {
+        if (s.t==='SEP') return <span key={i} className="s-sep">{s.v}</span>;
+        const c = SEG_COLORS[s.t]||SEG_COLORS.VXX;
+        return <span key={i} className="seg" style={{background:c.bg,color:c.fg}}>{s.v}</span>;
+      })}
+    </div>
+  );
+}
+
+// Copy button with satisfying click animation
+function CopyBtn({text, small, gold}) {
+  const [st, setSt] = useState('idle'); // idle | press | done
+  const handle = () => {
+    setSt('press');
+    navigator.clipboard?.writeText(text).catch(()=>{});
+    setTimeout(()=>setSt('done'), 80);
+    setTimeout(()=>setSt('idle'), 1800);
+  };
+  const isDone = st==='done', isPress = st==='press';
+  if (gold) return (
+    <button onClick={handle} style={{
+      padding: small?'3px 9px':'5px 13px', borderRadius: 6, fontSize: 10, fontWeight: 600,
+      cursor:'pointer', border:'1px solid', whiteSpace:'nowrap', flexShrink:0,
+      background: isDone?'rgba(245,158,11,0.15)':'rgba(120,53,15,0.3)',
+      borderColor: isDone?'rgba(245,158,11,0.6)':'rgba(120,53,15,0.6)',
+      color: isDone?'#fbbf24':'#d97706',
+      transform: isPress?'scale(0.94)':'scale(1)',
+      boxShadow: isPress?'none':'0 1px 4px rgba(0,0,0,0.4)',
+      transition:'all 0.12s',
+    }}>{isDone?'✓':'📋'}</button>
+  );
+  return (
+    <button onClick={handle} style={{
+      padding: small?'3px 9px':'5px 13px', borderRadius: 6, fontSize: 10, fontWeight: 600,
+      cursor:'pointer', border:'1px solid', whiteSpace:'nowrap', flexShrink:0,
+      background: isDone?'rgba(99,102,241,0.15)':'rgba(255,255,255,0.04)',
+      borderColor: isDone?'rgba(124,127,245,0.6)':'rgba(255,255,255,0.1)',
+      color: isDone?'#a5b4fc':T.text2,
+      transform: isPress?'scale(0.94)':'scale(1)',
+      boxShadow: isPress?'none':'0 1px 4px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.05) inset',
+      transition:'all 0.12s',
+    }}>{isDone?'✓ Copiat':'📋 Copiar'}</button>
+  );
+}
+
+// Primary button
+function PrimaryBtn({children, onClick, color, style}) {
+  const [press, setPress] = useState(false);
+  const from = color||'#6366f1', to = color ? shiftHue(color, 30) : '#8b5cf6';
+  return (
+    <button
+      onMouseDown={()=>setPress(true)}
+      onMouseUp={()=>setPress(false)}
+      onMouseLeave={()=>setPress(false)}
+      onClick={onClick}
+      style={{
+        padding: '11px 20px',
+        background: `linear-gradient(160deg, ${from}, ${to})`,
+        border: 'none',
+        borderRadius: 10,
+        color: '#fff',
+        fontSize: 13,
+        fontWeight: 700,
+        cursor: 'pointer',
+        letterSpacing: '0.03em',
+        width: '100%',
+        transform: press ? 'translateY(1px) scale(0.99)' : 'translateY(0) scale(1)',
+        boxShadow: press
+          ? `0 1px 4px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.3)`
+          : `0 4px 16px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.15) inset, 0 -2px 0 rgba(0,0,0,0.25) inset, 0 0 24px ${from}44`,
+        transition: 'transform 0.1s, box-shadow 0.1s',
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function shiftHue(hex, deg) {
+  // Simple hue shift for gradient pairs — just offset the color slightly
+  return hex; // passthrough; gradients defined inline per button
+}
+
+// Section label
+function SectionLabel({children}) {
+  return (
+    <div style={{fontSize:9.5, fontWeight:700, letterSpacing:'1.8px', textTransform:'uppercase', color:T.text3, marginBottom:7}}>
+      {children}
+    </div>
+  );
+}
+
+// Modern toggle
+function Toggle({on, onChange, label}) {
+  const [press, setPress] = useState(false);
+  return (
+    <div style={{display:'flex', alignItems:'center', gap:9, cursor:'pointer', userSelect:'none'}}
+      onClick={()=>onChange(!on)}
+      onMouseDown={()=>setPress(true)} onMouseUp={()=>setPress(false)} onMouseLeave={()=>setPress(false)}>
+      <div style={{
+        width:36, height:20, borderRadius:10, position:'relative',
+        background: on ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : 'rgba(255,255,255,0.06)',
+        border: `1px solid ${on?'rgba(99,102,241,0.5)':'rgba(255,255,255,0.1)'}`,
+        boxShadow: on
+          ? '0 0 10px rgba(99,102,241,0.3), 0 1px 0 rgba(255,255,255,0.1) inset'
+          : '0 1px 4px rgba(0,0,0,0.4) inset',
+        transition: 'all 0.2s', flexShrink:0,
+        transform: press?'scale(0.94)':'scale(1)',
+      }}>
+        <div style={{
+          width:14, height:14, background:'#fff', borderRadius:'50%',
+          position:'absolute', top:2, left:on?18:2,
+          boxShadow:'0 1px 4px rgba(0,0,0,0.5)',
+          transition:'left 0.2s cubic-bezier(0.34,1.56,0.64,1)',
+        }} />
+      </div>
+      <span style={{fontSize:11.5, color:T.text2, lineHeight:1}}>{label}</span>
+    </div>
+  );
+}
+
+// Pill button — neutre per defecte, hover posa color, actiu = color fort + glow permanent
+function PillBtn({active, onClick, children, title, activeColor, activeTextColor}) {
+  const [hov, setHov] = useState(false);
+  const [press, setPress] = useState(false);
+  const ac = activeColor || 'rgba(99,102,241,0.9)';
+  const acDim = activeColor ? activeColor.replace(/[\d.]+\)$/, '0.18)') : 'rgba(99,102,241,0.18)';
+  const acMid = activeColor ? activeColor.replace(/[\d.]+\)$/, '0.35)') : 'rgba(99,102,241,0.35)';
+
+  let bg, border, color, shadow;
+  if (active) {
+    bg = T.dark ? acMid : ac.replace(/[\d.]+\)$/, '0.15)');
+    border = `1px solid ${ac.replace(/[\d.]+\)$/, '0.6)')}`;
+    color = T.dark ? (activeTextColor || '#fff') : (activeTextColor ? darkenHex(activeTextColor, 0.5) : '#111');
+    shadow = T.dark
+      ? `0 2px 10px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.12) inset, 0 0 14px ${ac.replace(/[\d.]+\)$/, '0.25)')}`
+      : `0 1px 4px rgba(0,0,0,0.12)`;
+  } else if (hov) {
+    bg = T.dark ? acDim : ac.replace(/[\d.]+\)$/, '0.10)');
+    border = `1px solid ${ac.replace(/[\d.]+\)$/, '0.35)')}`;
+    color = T.dark ? (activeTextColor || '#e8e8ff') : (activeTextColor ? darkenHex(activeTextColor, 0.55) : '#333');
+    shadow = T.dark ? `0 2px 8px rgba(0,0,0,0.25), 0 0 10px ${ac.replace(/[\d.]+\)$/, '0.15)')}` : '0 1px 3px rgba(0,0,0,0.10)';
+  } else {
+    bg = T.dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.07)';
+    border = T.dark ? '1px solid rgba(255,255,255,0.09)' : '1px solid rgba(0,0,0,0.14)';
+    color = T.text3;
+    shadow = T.dark ? 'none' : '0 1px 3px rgba(0,0,0,0.07)';
+  }
+
+  return (
+    <div
+      title={title} onClick={onClick}
+      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>{setHov(false);setPress(false);}}
+      onMouseDown={()=>setPress(true)} onMouseUp={()=>setPress(false)}
+      style={{
+        padding:'5px 13px', borderRadius:20, fontSize:11.5, fontWeight:600,
+        cursor:'pointer', userSelect:'none', transition:'all 0.15s',
+        background:bg, border, color, boxShadow:shadow,
+        transform: press ? 'scale(0.93)' : 'scale(1)',
+      }}
+    >{children}</div>
+  );
+}
+
+// Collapsible section
+function CollapsibleSection({title, count, defaultOpen=true, children}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div>
+      <div onClick={()=>setOpen(o=>!o)} style={{display:'flex',alignItems:'center',gap:7,cursor:'pointer',padding:'5px 0',userSelect:'none'}}>
+        <span style={{fontSize:9, color:T.text3, transition:'transform 0.2s', display:'inline-block', transform:open?'rotate(0)':'rotate(-90deg)'}}>▼</span>
+        <span style={{fontSize:9.5,fontWeight:700,letterSpacing:'1.5px',textTransform:'uppercase',color:T.text3}}>{title}</span>
+        {count!==undefined && <span style={{fontSize:9,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',borderRadius:10,padding:'1px 7px',color:T.text3}}>{count}</span>}
+      </div>
+      {open && <div className="fade-up">{children}</div>}
+    </div>
+  );
+}
+
+// ─── TAB 1: CREAR NOMS ────────────────────────────────────────────────────────
+function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
+  const [ref, setRef] = useState('1983');
+  const [titolRaw, setTitolRaw] = useState('BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS');
+  const [titol, setTitol] = useState('BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS');
+  const [fmt, setFmt] = useState('FTR');
+  const [tmp, setTmp] = useState(1);
+  const [epiFrom, setEpiFrom] = useState(1);
+  const [epiTo, setEpiTo] = useState(3);
+  const [prfs, setPrfs] = useState(['MASTER','DCP']);
+  const [langStates, setLangStates] = useState({ES:'pin',EN:'sel',CA:'sel'});
+  const [visuals, setVisuals] = useState(['GRA','GRA_SBT']);
+  const [length, setLength] = useState('S');
+  const [vxx, setVxx] = useState(1);
+  const [taActive, setTaActive] = useState({MIX:true,ME:true,DX:false});
+  const [taChannels, setTaChannels] = useState({MIX:['2_0','5_1'],ME:['5_1'],DX:['1']});
+  const [genVideo, setGenVideo] = useState(true);
+  const [genAudio, setGenAudio] = useState(true);
+  const [results, setResults] = useState(null);
+  const [openEpisode, setOpenEpisode] = useState(0);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const normTitol = v => v.trim().replace(/\s+/g,'_').toUpperCase();
+  const activeLangs = LANGS.filter(l=>langStates[l.code]).map(l=>({code:l.code,state:langStates[l.code]}));
+  const activeBlocks = TA_BLOCKS.filter(b=>taActive[b.id]).map(b=>({id:b.id,channels:taChannels[b.id]||[]})).filter(b=>b.channels.length>0);
+
+  const handleGenerate = () => {
+    const t = normTitol(titol);
+    if (!ref.trim()) { setError('Cal emplenar la Referència.'); return; }
+    if (!t) { setError('Cal emplenar el Títol.'); return; }
+    if (prfs.length===0) { setError('Cal seleccionar almenys un Perfil (PRF).'); return; }
+    if (activeLangs.length===0) { setError('Cal seleccionar almenys un Idioma.'); return; }
+    if (!genVideo&&!genAudio) { setError('Cal activar vídeos o àudios.'); return; }
+    setError('');
+    setResults(generateNames({ref:ref.trim(),titol:t,fmt,tmp,epiFrom,epiTo,prfs,langs:activeLangs,visuals,length,taBlocks:activeBlocks,genVideo,genAudio,inclExt:tweaks.showExtension}));
+    setOpenEpisode(0);
+  };
+
+  const allNames = results ? results.flatMap(ep=>[...ep.video.map(n=>n.name),...ep.audio.map(n=>n.name)]) : [];
+
+  const cycleLang = code => {
+    const pins = Object.values(langStates).filter(s=>s==='pin').length;
+    setLangStates(ls => {
+      const cur=ls[code];
+      if(!cur) return {...ls,[code]:'sel'};
+      if(cur==='sel') { if(pins<2) return {...ls,[code]:'pin'}; const {[code]:_,...r}=ls; return r; }
+      const {[code]:_,...r}=ls; return r;
+    });
+  };
+  const toggleTaBlock = id => {
+    const was=taActive[id];
+    const next={...taActive,[id]:!was};
+    setTaActive(next);
+    if(!was){ const def=TA_BLOCKS.find(b=>b.id===id)?.defCh||'2_0'; setTaChannels(tc=>({...tc,[id]:[def]})); }
+    const anyA=Object.values(next).some(Boolean);
+    setGenAudio(anyA);
+  };
+  const toggleCn = (bId,ch) => setTaChannels(tc=>{
+    const cur=tc[bId]||[];
+    if(cur.includes(ch)&&cur.length<=1) return tc;
+    return {...tc,[bId]:cur.includes(ch)?cur.filter(c=>c!==ch):[...cur,ch]};
+  });
+  const toggleAudio = v => {
+    setGenAudio(v);
+    if(v){ const any=Object.values(taActive).some(Boolean); if(!any){setTaActive(t=>({...t,MIX:true}));setTaChannels(t=>({...t,MIX:['2_0']}));} }
+    else { setTaActive({MIX:false,ME:false,DX:false}); setTaChannels({MIX:[],ME:[],DX:[]}); }
+  };
+
+  const gap = tweaks.density==='compact' ? 7 : 11;
+  const isSER = fmt==='SER';
+  const tc = tweakColors || {prf:'#22d3ee',vis:'#a78bfa',fmt:'#4ade80',idi:'#f472b6'};
+  const glow = glowA || 0.22;
+  const taBlocks = taBlocksDynamic || TA_BLOCKS;
+
+  
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap}}>
+
+      {/* REF + TÍTOL */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 3fr',gap}}>
+        <Card>
+          <SectionLabel>REF — Referència</SectionLabel>
+          <input value={ref} onChange={e=>setRef(e.target.value)} placeholder="ex: 1983" style={{width:'100%'}} />
+        </Card>
+        <Card>
+          <SectionLabel>TÍTOL</SectionLabel>
+          <input value={titolRaw} onChange={e=>{setTitolRaw(e.target.value);setTitol(e.target.value);}}
+            onBlur={e=>{const v=normTitol(e.target.value);setTitolRaw(v);setTitol(v);}}
+            placeholder="ex: BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS" style={{width:'100%'}} />
+        </Card>
+      </div>
+
+      {/* FMT */}
+      <Card>
+        <SectionLabel>FMT — Tipus de referència</SectionLabel>
+        <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+          <div style={{display:'flex',gap:5}}>
+            {FMT_OPTIONS.map(f=>(
+              <PillBtn key={f.val} active={fmt===f.val} title={f.tip} onClick={()=>setFmt(f.val)}
+                activeColor={hexToRgba(tc.fmt,0.35)} activeTextColor={tc.fmt}>
+                {f.val}
+              </PillBtn>
+            ))}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,flex:1,minWidth:260,
+            opacity:isSER?1:0.3,pointerEvents:isSER?'auto':'none',transition:'opacity 0.2s'}}>
+            {[{label:'Temporada',val:tmp,set:setTmp,min:1,max:99},
+              {label:'Episodi des de',val:epiFrom,set:setEpiFrom,min:1,max:9999},
+              {label:'Episodi fins a',val:v=>setEpiTo(Math.max(epiFrom,v)),min:1,max:9999,val2:epiTo}
+            ].map(({label,val,val2,set,min,max},k)=>(
+              <div key={k}>
+                <div style={{fontSize:10,color:T.text3,marginBottom:3}}>{label}</div>
+                <input type="number" value={val2||val} min={min} max={max}
+                  onChange={e=>set(Math.max(min,Math.min(max,parseInt(e.target.value)||min)))}
+                  style={{width:'100%'}} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* PRF + IDI */}
+      <div style={{display:'flex',gap}}>
+        <Card style={{flexShrink:0}}>
+          <SectionLabel>PRF — Perfil / Destí</SectionLabel>
+          <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+            {PRF_OPTIONS.map(p=>(
+              <PillBtn key={p} active={prfs.includes(p)} onClick={()=>setPrfs(ps=>ps.includes(p)?ps.filter(x=>x!==p):[...ps,p])}
+                activeColor={hexToRgba(tc.prf,0.35)} activeTextColor={tc.prf}>{p}</PillBtn>
+            ))}
+          </div>
+          <div style={{fontSize:9.5,color:T.text3,marginTop:5}}>Selecció múltiple</div>
+        </Card>
+        <Card style={{flex:1}}>
+          <SectionLabel>IDI — Idiomes</SectionLabel>
+          <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+            {LANGS.map(l=>{
+              const st=langStates[l.code], isSel=st==='sel', isPin=st==='pin';
+              const idiColor = tc.idi || '#f472b6';
+              const pinColor = '#f59e0b';
+              return (
+                <div key={l.code} onClick={()=>cycleLang(l.code)} title={l.name} style={{
+                  padding:'5px 11px',borderRadius:8,fontSize:11.5,fontWeight:700,
+                  cursor:'pointer',userSelect:'none',transition:'all 0.15s',
+                  background: isPin?hexToRgba(pinColor,0.2):isSel?hexToRgba(idiColor,0.2):(T.dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.07)'),
+                  border: isPin?`1px solid ${hexToRgba(pinColor,0.55)}`:isSel?`1px solid ${hexToRgba(idiColor,0.45)}`:(T.dark?'1px solid rgba(255,255,255,0.11)':'1px solid rgba(0,0,0,0.14)'),
+                  color: isPin?(T.dark?pinColor:darkenHex(pinColor,0.55)):isSel?(T.dark?idiColor:darkenHex(idiColor,0.55)):T.text2,
+                  boxShadow: (isPin||isSel)?`0 2px 8px rgba(0,0,0,0.2), 0 0 10px ${hexToRgba(isPin?pinColor:idiColor,glow*0.8)}`:(T.dark?'none':'0 1px 3px rgba(0,0,0,0.07)'),
+                }}>{l.code}</div>
+              );
+            })}
+          </div>
+          <div style={{fontSize:9.5,color:T.text3,marginTop:6,display:'flex',gap:8}}>
+            <span><span style={{color:tc.idi}}>●</span> Color = ALT</span>
+            <span><span style={{color:'#f59e0b'}}>●</span> Taronja = ORG (pin, màx. 2)</span>
+          </div>
+        </Card>
+      </div>
+
+      {/* VIS + L/S + VER */}
+      <div style={{display:'flex',gap}}>
+        <Card style={{flex:3}}>
+          <SectionLabel>VIS — Estat visual</SectionLabel>
+          <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+            {VIS_OPTIONS.map(v=>(
+              <PillBtn key={v.val} active={visuals.includes(v.val)} title={v.tip}
+                onClick={()=>setVisuals(vs=>vs.includes(v.val)?vs.filter(x=>x!==v.val):[...vs,v.val])}
+                activeColor={hexToRgba(tc.vis,0.35)} activeTextColor={tc.vis}>{v.val}</PillBtn>
+            ))}
+          </div>
+          <div style={{fontSize:9.5,color:T.text3,marginTop:5}}>Selecció múltiple · àudio sempre XXX</div>
+        </Card>
+        <Card>
+          <SectionLabel>Longitud</SectionLabel>
+          <div style={{display:'flex',gap:5}}>
+            {['Short','Long'].map(l=>(
+              <PillBtn key={l} active={length===(l==='Short'?'S':'L')} onClick={()=>setLength(l==='Short'?'S':'L')}
+                activeColor={hexToRgba(tweaks.accentColor||'#7c7ff5',0.35)} activeTextColor={tweaks.accentColor||'#a5b4fc'}>{l}</PillBtn>
+            ))}
+          </div>
+        </Card>
+        <Card>
+          <SectionLabel>Versió (VXX)</SectionLabel>
+          <div style={{display:'flex',alignItems:'center',gap:5}}>
+            <span style={{fontSize:12.5,fontWeight:600,color:T.text2}}>V</span>
+            <input type="number" value={vxx} min={1} max={99} style={{width:58}} onChange={e=>setVxx(Math.max(1,Math.min(99,parseInt(e.target.value)||1)))} />
+          </div>
+          <div style={{fontSize:9.5,color:T.text3,marginTop:4}}>V01 – V99</div>
+        </Card>
+      </div>
+
+      {/* TA × CN */}
+      <Card>
+        <SectionLabel>TA · CN — Tipus d'àudio × Canals</SectionLabel>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          {taBlocks.map(block=>{
+            const isActive=taActive[block.id];
+            return (
+              <div key={block.id} style={{
+                flex:1, minWidth:170, borderRadius:9, padding:'9px 12px',
+                background: isActive?`rgba(255,255,255,0.07)`:'rgba(255,255,255,0.03)',
+                border: `1px solid ${isActive?`${block.color}55`:'rgba(255,255,255,0.08)'}`,
+                boxShadow: isActive?`0 0 20px ${block.color}22, 0 2px 10px rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.08) inset`:'none',
+                display:'flex',alignItems:'center',gap:9,
+                transition:'all 0.2s',
+                opacity: isActive?1:0.45,
+              }}>
+                <div onClick={()=>toggleTaBlock(block.id)} style={{
+                  padding:'5px 13px', borderRadius:20, fontSize:12, fontWeight:700,
+                  cursor:'pointer', userSelect:'none', flexShrink:0, transition:'all 0.15s',
+                  background: isActive?`${block.color}33`:'rgba(255,255,255,0.04)',
+                  border: `1px solid ${isActive?`${block.color}66`:'rgba(255,255,255,0.08)'}`,
+                  color: isActive?block.color:T.text3,
+                  boxShadow: isActive?`0 2px 8px rgba(0,0,0,0.4), 0 0 10px ${block.color}22`:'none',
+                }}>{block.label}</div>
+                <div style={{display:'flex',gap:4,flexWrap:'wrap',opacity:isActive?1:0.3,pointerEvents:isActive?'auto':'none',transition:'opacity 0.2s'}}>
+                  {CN_OPTIONS.map(cn=>{
+                    const active=(taChannels[block.id]||[]).includes(cn);
+                    return (
+                      <div key={cn} onClick={()=>toggleCn(block.id,cn)} style={{
+                        padding:'3px 9px',borderRadius:16,fontSize:10.5,fontWeight:600,
+                        cursor:'pointer',userSelect:'none',transition:'all 0.12s',
+                        background: active?`${block.color}22`:'rgba(255,255,255,0.03)',
+                        border: `1px solid ${active?`${block.color}55`:'rgba(255,255,255,0.07)'}`,
+                        color: active?block.color:T.text3,
+                        boxShadow: active?`0 1px 4px rgba(0,0,0,0.3)`:'none',
+                      }}>{cn}</div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{fontSize:9.5,color:T.text3,marginTop:7}}>Activa el tipus per habilitar canals · genera totes les combinacions actives</div>
+      </Card>
+
+      {/* Toggles */}
+      <div style={{display:'flex',gap:20,flexWrap:'wrap',padding:'2px 2px'}}>
+        <Toggle on={genVideo} onChange={setGenVideo} label={<>Generar <strong style={{color:T.text,fontWeight:600}}>vídeos</strong></>} />
+        <Toggle on={genAudio} onChange={toggleAudio} label={<>Generar <strong style={{color:T.text,fontWeight:600}}>àudios</strong></>} />
+        <Toggle on={!!(tweaks&&tweaks.showExtension)} onChange={v=>setTweak&&setTweak('showExtension',v)}
+          label={<>Extensió <strong style={{color:T.text,fontWeight:600}}>(.mov / .wav)</strong></>} />
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div style={{background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.25)',borderRadius:8,padding:'9px 14px',color:'#fca5a5',fontSize:11.5}}>
+          ⚠ {error}
+        </div>
+      )}
+
+      {/* Generate */}
+      <PrimaryBtn onClick={handleGenerate} style={{background:'linear-gradient(145deg,#6366f1,#8b5cf6)'}}>
+        ⚡ CREAR NOMS
+      </PrimaryBtn>
+
+      {/* Results */}
+      {results && results.length>0 && (
+        <div className="fade-up" style={{borderTop:'1px solid rgba(255,255,255,0.05)',paddingTop:14}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div style={{fontSize:11,color:T.text2,fontWeight:500}}>
+              <span style={{color:T.text,fontWeight:700}}>{allNames.length}</span> nom{allNames.length!==1?'s':''} generats
+            </div>
+            <CopyBtn text={allNames.join('\n')} />
+          </div>
+          {fmt==='SER' ? results.map((ep,idx)=>{
+            const fmtStr=buildFmt(fmt,tmp,epiFrom,epiTo,ep.epi);
+            const total=ep.video.length+ep.audio.length;
+            const allEp=[...ep.video.map(n=>n.name),...ep.audio.map(n=>n.name)];
+            return (
+              <div key={idx} style={{marginBottom:4,border:`1px solid ${openEpisode===idx?'rgba(255,255,255,0.1)':'rgba(255,255,255,0.05)'}`,borderRadius:9,overflow:'hidden',transition:'border-color 0.15s'}}>
+                <div onClick={()=>setOpenEpisode(openEpisode===idx?-1:idx)}
+                  style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 13px',background:'rgba(255,255,255,0.03)',cursor:'pointer',userSelect:'none'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:8}}>
+                    <span style={{fontSize:9,color:T.text3,transition:'transform 0.2s',display:'inline-block',transform:openEpisode===idx?'':'rotate(-90deg)'}}>▼</span>
+                    <span style={{fontFamily:tweaks.monoFont||'Courier New',fontSize:12,color:'#86efac'}}>{fmtStr}</span>
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:7}}>
+                    <span style={{fontSize:9.5,background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.07)',borderRadius:10,padding:'1px 8px',color:T.text3}}>{total} noms</span>
+                    <CopyBtn text={allEp.join('\n')} small />
+                  </div>
+                </div>
+                {openEpisode===idx && (
+                  <div className="fade-up" style={{padding:'10px 13px',background:'rgba(0,0,0,0.2)'}}>
+                    <ResultSection title="VÍDEO (.mov)" names={ep.video} mono={tweaks.monoFont} allResults={results} nameArr="video" />
+                    <ResultSection title="ÀUDIO (.wav)" names={ep.audio} mono={tweaks.monoFont} allResults={results} nameArr="audio" />
+                  </div>
+                )}
+              </div>
+            );
+          }) : (
+            <>
+              <ResultSection title="VÍDEO (.mov)" names={results[0]?.video||[]} mono={tweaks.monoFont} />
+              <ResultSection title="ÀUDIO (.wav)" names={results[0]?.audio||[]} mono={tweaks.monoFont} />
+            </>
+          )}
+          {/* Legend */}
+          <div style={{marginTop:10,padding:'7px 12px',background:'rgba(0,0,0,0.2)',borderRadius:7,border:'1px solid rgba(255,255,255,0.04)',display:'flex',flexWrap:'wrap',gap:4}}>
+            {Object.entries(SEG_COLORS).map(([k,c])=>(
+              <span key={k} className="seg" style={{background:c.bg,color:c.fg}}>{k}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ResultSection({title, names, mono, allResults, nameArr}) {
+  if (!names||names.length===0) return null;
+  return (
+    <CollapsibleSection title={title} count={names.length}>
+      <div style={{display:'flex',flexDirection:'column',gap:4,marginTop:4}}>
+        {names.map((n,idx)=>(
+          <div key={idx} style={{display:'flex',alignItems:'center',gap:6}}>
+            <NameBox segments={n.segments} mono={mono} />
+            <CopyBtn text={n.name} small />
+            {allResults&&allResults.length>1&&nameArr && <CopyBtn text={allResults.map(ep=>ep[nameArr][idx]?.name||'').filter(Boolean).join('\n')} small gold />}
+          </div>
+        ))}
+      </div>
+    </CollapsibleSection>
+  );
+}
+
+// ─── TAB 2: DESXIFRAR ─────────────────────────────────────────────────────────
+const FIELD_DESCS = {
+  ref:{label:'REF — Referència',cls:'fc-ref',desc:()=>'Codi intern del projecte'},
+  titol:{label:'TÍTOL',cls:'fc-tit',span:2,desc:()=>'Títol normalitzat (espais → _, majúscules)'},
+  fmt:{label:'FMT — Tipus',cls:'fc-fmt',desc:v=>({FTR:'Feature — Llargmetratge',TLR:'Tràiler',SPT:'Spot',SER:'Sèrie'}[v]||'Tipus desconegut')},
+  tmp:{label:'TMP — Temporada',cls:'fc-tmp',desc:v=>`Temporada ${parseInt(v)}`},
+  epi:{label:'EPI — Episodi',cls:'fc-tmp',desc:v=>`Episodi ${parseInt(v)}`},
+  prf:{label:'PRF — Perfil',cls:'fc-prf',desc:v=>({MASTER:'Master original',BR:'Blu-ray',DCP:'Digital Cinema Package',SD:'Standard Definition'}[v]||'Perfil desconegut')},
+  idi:{label:'IDI — Idioma',cls:'fc-idi',desc:v=>LANGS.find(l=>l.code===v)?.name||'Desconegut'},
+  ver:{label:'VER — Versió lingüística',cls:'fc-ver',desc:v=>v==='ORG'?'Original (pinnejat)':'Alternativa'},
+  vis:{label:'VIS — Estat visual',cls:'fc-vis',desc:v=>({XXX:'Sense modificació',GRA:'Grafismes cremats',INT:'Inserts cremats',SBT:'Subtítols cremats',GRA_INT:'Grafismes + Inserts',GRA_SBT:'Grafismes + Subtítols'}[v]||'Desconegut')},
+  ls:{label:'L/S — Longitud',cls:'fc-ls',desc:v=>v==='S'?'Short':'Long'},
+  ta:{label:'TA · CN — Àudio',cls:'fc-ta',desc:v=>v==='XXX'?'No aplica (vídeo)':({MIX:'Mescla completa',ME:'Music & Effects',DX:'Diàlegs'}[v]||v)},
+  vxx:{label:'VXX — Versió fitxer',cls:'fc-vxx',desc:v=>`Versió ${parseInt(v.replace('V',''))} del fitxer`},
+  ext:{label:'Extensió',cls:'fc-ext',desc:v=>({'.mov':'QuickTime — vídeo','.wav':'WAVE — àudio','.mp4':'MPEG-4','.mxf':'MXF'}[v]||'Arxiu de media')},
+  type:{label:'Tipus d\'arxiu',cls:'fc-type',desc:v=>`Nomenclatura de ${v.toLowerCase()} detectada`},
+};
+
+function Tab2({tweaks}) {
+  const [input, setInput] = useState('1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-GRA-S-XXX-V01.mov');
+  const [parsed, setParsed] = useState(null);
+  const [drag, setDrag] = useState(false);
+
+  useEffect(()=>{ setParsed(parseName(input)); }, []);
+
+  const buildSegs = p => {
+    if (!p) return [];
+    const s=[];
+    if(p.fields.ref){s.push({t:'REF',v:p.fields.ref});s.push({t:'SEP',v:'-N-'});}
+    if(p.fields.titol){s.push({t:'TIT',v:p.fields.titol});s.push({t:'SEP',v:'-N-'});}
+    if(p.fields.fmt){let fs=p.fields.fmt;if(p.fields.fmt==='SER'){if(p.fields.tmp)fs+=`_S${p.fields.tmp}`;if(p.fields.epi)fs+=`_E${p.fields.epi}`;}s.push({t:'FMT',v:fs});s.push({t:'SEP',v:'-'});}
+    if(p.fields.prf){s.push({t:'PRF',v:p.fields.prf});s.push({t:'SEP',v:'-'});}
+    if(p.fields.idi){s.push({t:'IDI',v:p.fields.idi});s.push({t:'SEP',v:'-'});}
+    if(p.fields.ver){s.push({t:'VER',v:p.fields.ver});s.push({t:'SEP',v:'-'});}
+    if(p.fields.vis){s.push({t:'VIS',v:p.fields.vis});s.push({t:'SEP',v:'-'});}
+    if(p.fields.ls){s.push({t:'LS',v:p.fields.ls});s.push({t:'SEP',v:'-'});}
+    if(p.fields.ta){const ts=p.fields.cn?`${p.fields.ta}_${p.fields.cn}`:p.fields.ta;s.push({t:'TA',v:ts});s.push({t:'SEP',v:'-'});}
+    if(p.fields.vxx){s.push({t:'VXX',v:p.fields.vxx});}
+    if(p.fields.ext) s.push({t:'EXT',v:p.fields.ext});
+    return s;
+  };
+
+  const fieldOrder=['ref','titol','fmt','tmp','epi','prf','idi','ver','vis','ls','ta','vxx','ext','type'];
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:11}}>
+      <div
+        onDragOver={e=>{e.preventDefault();setDrag(true)}}
+        onDragLeave={()=>setDrag(false)}
+        onDrop={e=>{e.preventDefault();setDrag(false);const f=e.dataTransfer.files[0];if(f){setInput(f.name);setParsed(parseName(f.name));}}}
+        style={{
+          border:`2px dashed ${drag?'rgba(99,102,241,0.6)':'rgba(255,255,255,0.07)'}`,
+          borderRadius:12,background:drag?'rgba(99,102,241,0.05)':'rgba(0,0,0,0.2)',
+          padding:16,display:'flex',flexDirection:'column',gap:10,transition:'all 0.2s',
+        }}
+      >
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,color:T.text3,fontSize:12}}>
+          <span style={{fontSize:22,opacity:0.6}}>📂</span>
+          <span>Arrossega un fitxer aquí, o <span style={{color:'var(--accent)'}}>enganxa el nom a sota</span></span>
+        </div>
+        <input value={input}
+          onChange={e=>{setInput(e.target.value);setParsed(parseName(e.target.value));}}
+          placeholder="ex: 1983-N-BABA_YAGA-N-FTR-MASTER-ES-ORG-GRA-S-XXX-V01.mov"
+          style={{width:'100%',fontFamily:tweaks.monoFont||'Courier New',fontSize:12}} />
+        <div style={{fontSize:9.5,color:T.text3,textAlign:'center'}}>El fitxer no es mou ni modifica</div>
+      </div>
+
+      <PrimaryBtn onClick={()=>setParsed(parseName(input))} style={{background:'linear-gradient(145deg,#7c3aed,#4f46e5)'}}>
+        🔍 DESXIFRAR NOM
+      </PrimaryBtn>
+
+      {parsed && Object.keys(parsed.fields).length>0 && (
+        <div className="fade-up" style={{display:'flex',flexDirection:'column',gap:12}}>
+          {parsed.errors.length>0 && (
+            <div style={{background:'rgba(239,68,68,0.08)',border:'1px solid rgba(239,68,68,0.2)',borderRadius:8,padding:'9px 14px',color:'#fca5a5',fontSize:11.5}}>
+              ⚠ Segments no reconeguts: {parsed.errors.join(' · ')}
+            </div>
+          )}
+          <div>
+            <SectionLabel>Nom original — segments identificats</SectionLabel>
+            <NameBox segments={buildSegs(parsed)} mono={tweaks.monoFont} />
+          </div>
+          <div>
+            <SectionLabel>Camps desxifrats</SectionLabel>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:7}}>
+              {fieldOrder.map(key=>{
+                const def=FIELD_DESCS[key]; if(!def) return null;
+                if(key==='tmp'&&parsed.fields.fmt!=='SER') return null;
+                if(key==='epi'&&parsed.fields.fmt!=='SER') return null;
+                const val=key==='type'?parsed.fields.type:parsed.fields[key]; if(!val) return null;
+                const typeColor=key==='type'?(val==='VÍDEO'?'#7dd3fc':val==='ÀUDIO'?'#fca5a5':'#9ca3af'):'#e8e8f4';
+                const isErr=parsed.errors.some(e=>e.includes(key.toUpperCase()));
+                return (
+                  <div key={key} className={def.cls} style={{
+                    gridColumn:def.span?`span ${def.span}`:undefined,
+                    borderRadius:8,padding:'10px 13px',
+                    background: isErr?'rgba(239,68,68,0.09)':'rgba(255,255,255,0.045)',
+                    border:`1px solid rgba(255,255,255,0.09)`,
+                    borderLeft:`3px solid ${isErr?'rgba(239,68,68,0.6)':'var(--fc-c,rgba(255,255,255,0.2))'}`,
+                    boxShadow:'0 2px 8px rgba(0,0,0,0.2), 0 1px 0 rgba(255,255,255,0.06) inset',
+                    display:'flex',flexDirection:'column',gap:3,
+                  }}>
+                    <span style={{fontSize:8.5,fontWeight:700,letterSpacing:'1.5px',textTransform:'uppercase',color:isErr?'#fca5a5':T.text3}}>
+                      {def.label}
+                    </span>
+                    <span style={{fontFamily:tweaks.monoFont||'Courier New',fontSize:14,fontWeight:700,color:typeColor,letterSpacing:'0.02em'}}>
+                      {val}
+                    </span>
+                    <span style={{fontSize:10,color:T.text3}}>{def.desc(val)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── TAB 3: RENOMBRAR PER LOTS ────────────────────────────────────────────────
+const MOCK_CSV = [
+  {orig:'BABA_YAGA-FTR-MASTER-ES-V01.mov',nou:'1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-GRA-S-XXX-V01.mov',estat:'ok'},
+  {orig:'BABA_YAGA-FTR-MASTER-EN-V01.mov',nou:'1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-EN-ALT-GRA-S-XXX-V01.mov',estat:'ok'},
+  {orig:'BABA_YAGA-FTR-MASTER-ES-MIX20-V01.wav',nou:'1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-XXX-S-MIX_2_0-V01.wav',estat:'ok'},
+  {orig:'BABA_YAGA-FTR-MASTER-ES-MIX51-V01.wav',nou:'1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-ES-ORG-XXX-S-MIX_5_1-V01.wav',estat:'ok'},
+  {orig:'BABA_YAGA-FTR-DCP-ES-V01.mov',nou:'1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-DCP-ES-ORG-GRA-S-XXX-V01.mov',estat:'miss'},
+  {orig:'BABA_YAGA-FTR-MASTER-EN-MIX20-V01.wav',nou:'1983-N-BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS-N-FTR-MASTER-EN-ALT-XXX-S-MIX_2_0-V01.wav',estat:'warn'},
+];
+
+function Tab3({tweaks}) {
+  const [rows, setRows] = useState([]);        // [{original, new, status}]
+  const [csvRows, setCsvRows] = useState([]);   // raw rows from CSV parse
+  const [csvPath, setCsvPath] = useState('');
+  const [folderPath, setFolderPath] = useState('');
+  const [logExp, setLogExp] = useState(false);
+
+  // Rescan when both CSV and folder are loaded
+  useEffect(() => {
+    if (!csvPath || !folderPath || !csvRows.length || !window.bridge) return;
+    (async () => {
+      const raw = await new Promise(r => window.bridge.scan_folder_js(folderPath, JSON.stringify(csvRows), r));
+      try {
+        const result = JSON.parse(raw);
+        if (!result.error) setRows(result);
+      } catch(e) {}
+    })();
+  }, [csvPath, folderPath, csvRows]);
+
+  const stats = {
+    total: rows.length,
+    ok: rows.filter(r => r.status === 'found').length,
+    miss: rows.filter(r => r.status === 'missing').length,
+    warn: rows.filter(r => r.status === 'conflict').length,
+    done: rows.filter(r => r.status === 'done').length,
+  };
+
+  const handlePickCsv = async () => {
+    if (!window.bridge) return;
+    const path = await new Promise(r => window.bridge.pick_csv(r));
+    if (!path) return;
+    setCsvPath(path);
+    const raw = await new Promise(r => window.bridge.parse_csv(path, r));
+    try {
+      const data = JSON.parse(raw);
+      if (!data.error) setCsvRows(data.rows);
+    } catch(e) {}
+  };
+
+  const handlePickFolder = async () => {
+    if (!window.bridge) return;
+    const path = await new Promise(r => window.bridge.pick_folder(r));
+    if (path) setFolderPath(path);
+  };
+
+  const handleRename = async () => {
+    if (!window.bridge) return;
+    const foundRows = rows.filter(r => r.status === 'found');
+    if (!foundRows.length) return;
+    const conf = await new Promise(r => window.bridge.confirm_rename(String(foundRows.length), r));
+    if (conf !== 'yes') return;
+    const raw = await new Promise(r =>
+      window.bridge.execute_rename_js(folderPath, JSON.stringify(foundRows), r)
+    );
+    try {
+      const results = JSON.parse(raw);
+      if (!results.error) {
+        setRows(prev => prev.map(row => {
+          const done = results.find(res => res.original === row.original);
+          return done ? {...row, status: done.ok ? 'done' : 'error'} : row;
+        }));
+      }
+    } catch(e) {}
+  };
+
+  const exportLog = async () => {
+    if (!window.bridge) return;
+    const doneRows = rows.filter(r => r.status === 'done' || r.status === 'error');
+    if (!doneRows.length) return;
+    await new Promise(r => window.bridge.export_log_js(JSON.stringify(doneRows), r));
+    setLogExp(true); setTimeout(() => setLogExp(false), 2000);
+  };
+
+  const statCfg = {
+    found:   {row:'rgba(34,197,94,0.09)',bbg:'rgba(34,197,94,0.15)',bbd:'rgba(34,197,94,0.45)',bc:'#86efac',ic:'✓',lbl:'Trobat'},
+    missing: {row:'rgba(239,68,68,0.08)',bbg:'rgba(239,68,68,0.14)',bbd:'rgba(239,68,68,0.45)',bc:'#fca5a5',ic:'✗',lbl:'No trobat'},
+    conflict:{row:'rgba(245,158,11,0.08)',bbg:'rgba(245,158,11,0.13)',bbd:'rgba(245,158,11,0.45)',bc:'#fde68a',ic:'⚠',lbl:'Nom ja existeix'},
+    done:    {row:'rgba(139,92,246,0.09)',bbg:'rgba(139,92,246,0.15)',bbd:'rgba(139,92,246,0.45)',bc:'#d8b4fe',ic:'✓',lbl:'Renombrat'},
+    error:   {row:'rgba(239,68,68,0.08)',bbg:'rgba(239,68,68,0.14)',bbd:'rgba(239,68,68,0.45)',bc:'#fca5a5',ic:'✗',lbl:'Error'},
+  };
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',gap:11}}>
+      {/* Inputs */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:11}}>
+        <Card accent="rgba(99,102,241,0.5)">
+          <SectionLabel>1 · Fitxer CSV</SectionLabel>
+          <div style={{fontFamily:'Courier New',fontSize:11,color:'#86efac',background:'rgba(34,197,94,0.05)',border:'1px solid rgba(34,197,94,0.15)',borderRadius:6,padding:'6px 10px',wordBreak:'break-all',marginBottom:8}}>
+            {csvPath || 'Cap fitxer CSV seleccionat'}
+          </div>
+          <SecondaryBtn color="rgba(99,102,241,0.4)" onClick={handlePickCsv}>📄 Canviar CSV…</SecondaryBtn>
+          <div style={{fontSize:9.5,color:T.text3,marginTop:7}}>Format: nom_original,nom_nou · arrossega o selecciona</div>
+        </Card>
+        <Card accent="rgba(34,197,94,0.4)">
+          <SectionLabel>2 · Carpeta dels fitxers</SectionLabel>
+          <div style={{fontFamily:'Courier New',fontSize:11,color:'#86efac',background:'rgba(34,197,94,0.05)',border:'1px solid rgba(34,197,94,0.15)',borderRadius:6,padding:'6px 10px',wordBreak:'break-all',marginBottom:8}}>
+            {folderPath || 'Cap carpeta seleccionada'}
+          </div>
+          <SecondaryBtn color="rgba(34,197,94,0.35)" onClick={handlePickFolder}>📁 Canviar carpeta…</SecondaryBtn>
+          <div style={{fontSize:9.5,color:T.text3,marginTop:7}}>Cerca no recursiva (fitxers directament dins la carpeta)</div>
+        </Card>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:'flex',gap:12,alignItems:'center',background:'rgba(255,255,255,0.04)',borderRadius:8,padding:'9px 14px',flexWrap:'wrap',border:'1px solid rgba(255,255,255,0.10)'}}>
+        {[{dot:'#7dd3fc',n:stats.total,l:'total'},{dot:'#86efac',n:stats.ok,l:'trobats'},{dot:'#fca5a5',n:stats.miss,l:'no trobats'},{dot:'#fde68a',n:stats.warn,l:'conflictes'},...(stats.done>0?[{dot:'#d8b4fe',n:stats.done,l:'renombrats'}]:[])].map((s,i)=>(
+          <React.Fragment key={i}>
+            {i>0 && <span style={{color:'rgba(255,255,255,0.08)'}}>·</span>}
+            <div style={{display:'flex',alignItems:'center',gap:5,fontSize:11.5}}>
+              <div style={{width:7,height:7,borderRadius:'50%',background:s.dot,boxShadow:`0 0 6px ${s.dot}88`}} />
+              <span style={{fontWeight:700,color:T.text}}>{s.n}</span>
+              <span style={{color:T.text3}}>{s.l}</span>
+            </div>
+          </React.Fragment>
+        ))}
+        <div style={{flex:1}} />
+        <span style={{fontSize:10.5,color:T.text2}}>Es renombraran <strong style={{color:T.text}}>{stats.ok}</strong> fitxers</span>
+      </div>
+
+
+      {/* Table */}
+      <div style={{border:'1px solid rgba(255,255,255,0.06)',borderRadius:10,overflow:'hidden',boxShadow:'0 4px 16px rgba(0,0,0,0.4)'}}>
+        <table style={{width:'100%',borderCollapse:'collapse',fontSize:11}}>
+          <thead>
+            <tr style={{background:'rgba(255,255,255,0.03)',borderBottom:'1px solid rgba(255,255,255,0.06)'}}>
+              {['#','Nom original','','Nom nou','Estat'].map((h,i)=>(
+                <th key={i} style={{textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'1.2px',textTransform:'uppercase',color:T.text3,padding:'8px 11px'}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row,idx)=>{
+              const c=statCfg[row.status]||statCfg.missing;
+              return (
+                <tr key={idx} style={{borderBottom:'1px solid rgba(255,255,255,0.05)',background:c.row,transition:'background 0.15s'}}>
+                  <td style={{padding:'8px 11px',color:T.text2,fontSize:10,width:28}}>{idx+1}</td>
+                  <td style={{padding:'8px 11px',fontFamily:'Courier New',color:T.text2,maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row.original}</td>
+                  <td style={{padding:'8px 7px',color:T.text3,fontSize:14,width:30,textAlign:'center'}}>→</td>
+                  <td style={{padding:'8px 11px',fontFamily:'Courier New',color:row.status==='missing'?T.text3:T.text,maxWidth:360,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row.new}</td>
+                  <td style={{padding:'8px 11px',whiteSpace:'nowrap'}}>
+                    <span style={{display:'inline-flex',alignItems:'center',gap:4,padding:'3px 9px',borderRadius:20,fontSize:10,fontWeight:700,background:c.bbg,border:`1px solid ${c.bbd}`,color:c.bc,boxShadow:`0 1px 4px rgba(0,0,0,0.3), 0 0 8px ${c.bbd}44`}}>
+                      {c.ic} {c.lbl}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Actions */}
+      <div style={{display:'flex',gap:8}}>
+        <PrimaryBtn onClick={handleRename}
+          style={{
+            background: stats.ok>0 ? 'linear-gradient(145deg,#166534,#15803d)' : undefined,
+            opacity: stats.ok===0 ? 0.4 : 1,
+            cursor: stats.ok===0 ? 'not-allowed' : 'pointer',
+          }}>
+          ✅ Renombrar {stats.ok} fitxers trobats
+        </PrimaryBtn>
+        <SecondaryBtn onClick={exportLog} color={logExp?'rgba(34,197,94,0.4)':'rgba(99,102,241,0.3)'} style={{whiteSpace:'nowrap',padding:'11px 18px'}}>
+          {logExp?'✓ Exportat':'📋 Exportar log'}
+        </SecondaryBtn>
+      </div>
+      <div style={{fontSize:10,color:T.text3,textAlign:'center'}}>Els fitxers no trobats i els conflictes s'ignoraran</div>
+    </div>
+  );
+}
+
+function SecondaryBtn({children, onClick, color, style}) {
+  const [hov, setHov] = useState(false);
+  const [press, setPress] = useState(false);
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>{setHov(false);setPress(false);}}
+      onMouseDown={()=>setPress(true)} onMouseUp={()=>setPress(false)}
+      style={{
+        padding:'6px 14px', borderRadius:8, fontSize:11.5, fontWeight:600,
+        cursor:'pointer', border:`1px solid ${color||'rgba(255,255,255,0.1)'}`,
+        background: hov ? (color?color.replace('0.4','0.15').replace('0.3','0.1'):'rgba(255,255,255,0.06)') : 'rgba(255,255,255,0.03)',
+        color: T.text2,
+        transform: press?'scale(0.97)':'scale(1)',
+        boxShadow: press?'none':'0 1px 4px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.05) inset',
+        transition:'all 0.12s',
+        ...style,
+      }}
+    >{children}</button>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+const TABS = ['① Crear noms','② Desxifrar nom','③ Renombrar per lots'];
+
+function App() {
+  const [tweaks, setTweak] = window.useTweaks(TWEAK_DEFAULTS);
+  const [activeTab, setActiveTab] = useState(0);
+  const [, forceUpdate] = useState(0);
+  const t = tweaks || TWEAK_DEFAULTS;
+  const accent = t.accentColor || '#7c7ff5';
+  const theme = BG_THEMES[t.bgTheme] || BG_THEMES.zinc;
+  const glowA = GLOW_STRENGTH[t.glowIntensity] || GLOW_STRENGTH.medium;
+
+  useEffect(()=>{
+    applyTheme(t.customBg ? null : theme, t.customBg || null);
+    document.documentElement.style.setProperty('--accent', accent);
+    document.documentElement.style.setProperty('--accent-dim', hexToRgba(accent, 0.15));
+    forceUpdate(n => n + 1);
+  },[accent, t.bgTheme, t.customBg]);
+
+  const taBlocksDynamic = [
+    {id:'MIX',label:'MIX',desc:'Mescla completa',color:t.colorTA_MIX||'#818cf8',defCh:'2_0'},
+    {id:'ME', label:'ME', desc:'Music & Effects',color:t.colorTA_ME||'#34d399',defCh:'2_0'},
+    {id:'DX', label:'DX', desc:'Diàlegs',         color:t.colorTA_DX||'#fb923c',defCh:'1'},
+  ];
+
+  const tweakColors = {
+    prf: t.colorPrf || '#22d3ee',
+    vis: t.colorVis || '#a78bfa',
+    fmt: t.colorFmt || '#4ade80',
+    idi: t.colorIdi || '#f472b6',
+  };
+
+  useEffect(()=>{
+    document.documentElement.style.setProperty('--accent', accent);
+    document.documentElement.style.setProperty('--accent-dim', hexToRgba(accent, 0.15));
+    document.body.style.background = theme.bg;
+  },[accent, t.bgTheme, t.customBg]);
+
+  const isDark = T.dark !== false;
+
+  return (
+    <div style={{minHeight:'100vh', padding:'22px 24px', maxWidth:1020, margin:'0 auto'}}>
+
+      {/* Header */}
+      <div style={{marginBottom:18, display:'flex', alignItems:'center', gap:12}}>
+        <div style={{
+          width:36, height:36, borderRadius:10,
+          background:`linear-gradient(135deg, ${accent}, ${hexToRgba(accent,0.6)})`,
+          boxShadow:`0 4px 14px ${hexToRgba(accent,0.4)}, 0 1px 0 rgba(255,255,255,0.15) inset`,
+          display:'flex', alignItems:'center', justifyContent:'center',
+          fontSize:17, flexShrink:0, color:'#fff',
+        }}>◈</div>
+        <div>
+          <div style={{fontSize:18, fontWeight:700, color:T.text, letterSpacing:'-0.01em', lineHeight:1.2}}>NomsMasters</div>
+          <div style={{fontSize:11, color:T.text3, marginTop:1}}>Generador i desxifrador de nomenclatura de màsters</div>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div style={{display:'flex', gap:3, marginBottom:0, position:'relative'}}>
+        <div style={{position:'absolute',bottom:0,left:0,right:0,height:'1px',background:isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.10)'}} />
+        {TABS.map((tab,i)=>{
+          const isActive = activeTab===i;
+          return (
+            <div key={i} onClick={()=>setActiveTab(i)} style={{
+              padding:'9px 18px', cursor:'pointer', borderRadius:'8px 8px 0 0',
+              fontSize:12, fontWeight:600, letterSpacing:'0.02em',
+              background: isActive ? (isDark?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.9)') : 'transparent',
+              border: isActive ? `1px solid ${isDark?'rgba(255,255,255,0.10)':'rgba(0,0,0,0.12)'}` : '1px solid transparent',
+              borderBottom: 'none',
+              color: isActive ? T.text : T.text3,
+              position:'relative', zIndex: isActive?2:1, marginBottom: isActive?-1:0,
+              userSelect:'none', transition:'all 0.15s',
+              boxShadow: isActive ? `0 -2px 0 ${accent} inset` : 'none',
+            }}>{tab}</div>
+          );
+        })}
+      </div>
+
+      {/* Panel */}
+      <div style={{
+        background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.7)',
+        border: isDark ? '1px solid rgba(255,255,255,0.10)' : '1px solid rgba(0,0,0,0.09)',
+        borderTop:'none', borderRadius:'0 0 12px 12px', padding:'20px', minHeight:520,
+        boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.06) inset' : '0 4px 20px rgba(0,0,0,0.08)',
+      }}>
+        {activeTab===0 && <Tab1 tweaks={t} setTweak={setTweak} tweakColors={tweakColors} glowA={glowA} taBlocksDynamic={taBlocksDynamic} />}
+        {activeTab===1 && <Tab2 tweaks={t} />}
+        {activeTab===2 && <Tab3 tweaks={t} />}
+      </div>
+
+      {/* Tweaks Panel */}
+      <window.TweaksPanel>
+        <window.TweakSection label="Tema de fons">
+          <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:5, marginTop:2}}>
+            {Object.entries(BG_THEMES).map(([k,v])=>(
+              <div key={k} onClick={()=>{setTweak('bgTheme',k);setTweak('customBg','');}} style={{
+                height:32, borderRadius:7, cursor:'pointer',
+                background: v.dark ? (typeof v.bg==='string'&&v.bg.startsWith('linear')?v.bg:v.bg) : v.bg,
+                border: `2px solid ${t.bgTheme===k && !t.customBg ? accent : 'rgba(0,0,0,0.15)'}`,
+                display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:9, fontWeight:700,
+                color: v.dark?'rgba(255,255,255,0.8)':'rgba(0,0,0,0.6)',
+                letterSpacing:'0.5px', textTransform:'uppercase', transition:'all 0.15s',
+                boxShadow: t.bgTheme===k && !t.customBg ? `0 0 10px ${hexToRgba(accent,0.5)}` : '0 1px 3px rgba(0,0,0,0.15)',
+              }}>{k}</div>
+            ))}
+          </div>
+          <div style={{marginTop:8}}>
+            <window.TweakColor label="Color personalitzat" value={t.customBg||'#f4f4f5'} onChange={v=>{setTweak('customBg',v);setTweak('bgTheme','');}} />
+            {t.customBg && <div onClick={()=>{setTweak('customBg','');setTweak('bgTheme','zinc');}} style={{fontSize:10,color:accent,cursor:'pointer',marginTop:4,textAlign:'right'}}>↩ Tornar als presets</div>}
+          </div>
+          <window.TweakToggle label="Mode clar (light mode)" value={!!(t.bgTheme&&!BG_THEMES[t.bgTheme]?.dark)||(!t.bgTheme&&t.customBg?false:false)} onChange={v=>{ if(v){setTweak('bgTheme','zinc');setTweak('customBg','');}else{setTweak('bgTheme','dark');setTweak('customBg','');} }} />
+        </window.TweakSection>
+
+        <window.TweakSection label="Accent i estil">
+          <window.TweakColor label="Color d'accent" value={t.accentColor||'#7c7ff5'} onChange={v=>setTweak('accentColor',v)} />
+          <window.TweakRadio label="Glow" value={t.glowIntensity||'medium'} options={['subtle','medium','strong']} onChange={v=>setTweak('glowIntensity',v)} />
+          <window.TweakRadio label="Estil botó" value={t.btnStyle||'gradient'} options={['gradient','flat','outline']} onChange={v=>setTweak('btnStyle',v)} />
+        </window.TweakSection>
+
+        <window.TweakSection label="Colors de pills">
+          <window.TweakColor label="PRF (Perfil)" value={t.colorPrf||'#22d3ee'} onChange={v=>setTweak('colorPrf',v)} />
+          <window.TweakColor label="VIS (Estat visual)" value={t.colorVis||'#a78bfa'} onChange={v=>setTweak('colorVis',v)} />
+          <window.TweakColor label="FMT (Tipus ref.)" value={t.colorFmt||'#4ade80'} onChange={v=>setTweak('colorFmt',v)} />
+          <window.TweakColor label="IDI (Idiomes)" value={t.colorIdi||'#f472b6'} onChange={v=>setTweak('colorIdi',v)} />
+        </window.TweakSection>
+
+        <window.TweakSection label="Colors blocs TA">
+          <window.TweakColor label="MIX" value={t.colorTA_MIX||'#818cf8'} onChange={v=>setTweak('colorTA_MIX',v)} />
+          <window.TweakColor label="ME" value={t.colorTA_ME||'#34d399'} onChange={v=>setTweak('colorTA_ME',v)} />
+          <window.TweakColor label="DX" value={t.colorTA_DX||'#fb923c'} onChange={v=>setTweak('colorTA_DX',v)} />
+        </window.TweakSection>
+
+        <window.TweakSection label="General">
+          <window.TweakRadio label="Densitat" value={t.density||'compact'} options={['normal','compact']} onChange={v=>setTweak('density',v)} />
+          <window.TweakToggle label="Incloure extensió" value={!!t.showExtension} onChange={v=>setTweak('showExtension',v)} />
+          <window.TweakSelect label="Font monospace" value={t.monoFont||'Courier New'} onChange={v=>setTweak('monoFont',v)} options={['Consolas','Courier New','monospace']} />
+        </window.TweakSection>
+      </window.TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
