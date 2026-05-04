@@ -34,7 +34,7 @@ def export_log(results: list, path: str) -> None:
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     lines = [f"NomsMasters - Log d'execucio - {ts}", "=" * 60, ""]
     for r in results:
-        ok_str = "OK" if r.get("ok") else f"ERROR: {r.get('error', '')}"
+        ok_str = "OK" if r.get("ok") is True else f"ERROR: {r.get('error', '')}"
         lines.append(f"  {r['original']}  ->  {r['new']}  [{ok_str}]")
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
