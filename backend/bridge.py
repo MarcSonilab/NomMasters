@@ -42,19 +42,28 @@ class Bridge(QObject):
 
     @pyqtSlot(str, str, result=str)
     def scan_folder_js(self, folder: str, rows_json: str) -> str:
-        rows = json.loads(rows_json)
-        result = scan_folder(folder, rows)
-        return json.dumps(result)
+        try:
+            rows = json.loads(rows_json)
+            result = scan_folder(folder, rows)
+            return json.dumps(result)
+        except Exception as e:
+            return json.dumps({"error": str(e)})
 
     @pyqtSlot(str, str, result=str)
     def execute_rename_js(self, folder: str, rows_json: str) -> str:
-        rows = json.loads(rows_json)
-        result = execute_rename(folder, rows)
-        return json.dumps(result)
+        try:
+            rows = json.loads(rows_json)
+            result = execute_rename(folder, rows)
+            return json.dumps(result)
+        except Exception as e:
+            return json.dumps({"error": str(e)})
 
     @pyqtSlot(str, result=str)
     def export_log_js(self, results_json: str) -> str:
-        results = json.loads(results_json)
+        try:
+            results = json.loads(results_json)
+        except Exception as e:
+            return json.dumps({"ok": False, "error": str(e)})
         path, _ = QFileDialog.getSaveFileName(
             self._parent_widget,
             "Desa log",
