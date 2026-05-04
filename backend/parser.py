@@ -6,7 +6,6 @@ KNOWN_IDI = {"ES", "EN", "CA", "EU", "FR", "RU", "ZH", "JA", "NO", "CS", "XX"}
 KNOWN_VER = {"ORG", "ALT"}
 KNOWN_VIS = {"XXX", "GRA", "INT", "SBT", "GRA_INT", "GRA_SBT"}
 KNOWN_LEN = {"S", "L"}
-KNOWN_TA  = {"MIX", "ME", "DX", "XXX"}
 
 def parse_name(raw: str) -> dict:
     result = {
@@ -57,37 +56,37 @@ def parse_name(raw: str) -> dict:
                     result["fmt"] = "SER"
                 i += 1; state += 1
             else:
-                result["unknown"].append(seg); i += 1
+                result["unknown"].append(seg); i += 1; state += 1
 
         elif field == "prf":
             if seg in KNOWN_PRF:
                 result["prf"] = seg; i += 1; state += 1
             else:
-                result["unknown"].append(seg); i += 1
+                result["unknown"].append(seg); i += 1; state += 1
 
         elif field == "idi":
             if seg in KNOWN_IDI:
                 result["idi"] = seg; i += 1; state += 1
             else:
-                result["unknown"].append(seg); i += 1
+                result["unknown"].append(seg); i += 1; state += 1
 
         elif field == "ver":
             if seg in KNOWN_VER:
                 result["ver"] = seg; i += 1; state += 1
             else:
-                result["unknown"].append(seg); i += 1
+                result["unknown"].append(seg); i += 1; state += 1
 
         elif field == "vis":
             if seg in KNOWN_VIS:
                 result["vis"] = seg; i += 1; state += 1
             else:
-                result["unknown"].append(seg); i += 1
+                result["unknown"].append(seg); i += 1; state += 1
 
         elif field == "length":
             if seg in KNOWN_LEN:
                 result["length"] = seg; i += 1; state += 1
             else:
-                result["unknown"].append(seg); i += 1
+                result["unknown"].append(seg); i += 1; state += 1
 
         elif field == "ta_cn":
             if seg == "XXX":
@@ -100,13 +99,13 @@ def parse_name(raw: str) -> dict:
                     result["cn"] = m.group(2)
                     i += 1; state += 1
                 else:
-                    result["unknown"].append(seg); i += 1
+                    result["unknown"].append(seg); i += 1; state += 1
 
         elif field == "vxx":
-            if re.match(r"V\d{2}", seg):
+            if re.match(r"V\d{2}$", seg):
                 result["vxx"] = seg; i += 1; state += 1
             else:
-                result["unknown"].append(seg); i += 1
+                result["unknown"].append(seg); i += 1; state += 1
         else:
             i += 1
 

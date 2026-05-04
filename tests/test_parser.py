@@ -1,4 +1,3 @@
-import pytest
 from backend.parser import parse_name
 
 def test_full_video_name():
@@ -58,3 +57,19 @@ def test_long_version():
     r = parse_name(raw)
     assert r["length"] == "L"
     assert r["vxx"] == "V12"
+
+def test_vxx_long_digits_unknown():
+    raw = "1983-N-BABA_YAGA-N-FTR-MASTER-ES-ORG-XXX-S-XXX-V12345"
+    r = parse_name(raw)
+    # V12345 should not be recognized as vxx — it goes to unknown
+    assert r["vxx"] == ""
+    assert "V12345" in r["unknown"]
+
+def test_unknown_segment_doesnt_block_rest():
+    # BADPRF in place of MASTER — but IDI, VER etc should still parse
+    raw = "1983-N-BABA_YAGA-N-FTR-BADPRF-ES-ORG-XXX-S-XXX-V01.mov"
+    r = parse_name(raw)
+    assert "BADPRF" in r["unknown"]
+    assert r["idi"] == "ES"
+    assert r["ver"] == "ORG"
+    assert r["vxx"] == "V01"
