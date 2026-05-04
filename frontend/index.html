@@ -232,6 +232,13 @@ body {
 .no-sb { scrollbar-width: none; -ms-overflow-style: none; }
 .no-sb::-webkit-scrollbar { display: none; }
 
+/* Scrollbars sempre visibles (panell esquerre + formulari) */
+.scroll-vis { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.22) rgba(0,0,0,0.04); }
+.scroll-vis::-webkit-scrollbar { width: 6px; height: 6px; }
+.scroll-vis::-webkit-scrollbar-track { background: rgba(0,0,0,0.04); border-radius: 99px; }
+.scroll-vis::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.22); border-radius: 99px; }
+.scroll-vis::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.38); border-radius: 99px; }
+
 /* ── Segment chips ── */
 .seg { padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; letter-spacing: 0.02em; line-height: 1.6; vertical-align: middle; }
 .s-sep { color: var(--text-3); font-size: 11px; vertical-align: middle; line-height: 1.6; }
@@ -565,7 +572,7 @@ function NameBox({ segments, mono, plain }) {
 }
 
 // Copy button with satisfying click animation
-function CopyBtn({text, small, gold}) {
+function CopyBtn({text, small, gold, iconOnly, disabled}) {
   const [st, setSt] = useState('idle'); // idle | press | done
   const timersRef = useRef([]);
   const handle = () => {
@@ -598,14 +605,15 @@ function CopyBtn({text, small, gold}) {
   useEffect(() => () => timersRef.current.forEach(clearTimeout), []);
   const isDone = st==='done', isPress = st==='press';
   if (gold) return (
-    <button onClick={handle} style={{
+    <button onClick={disabled ? undefined : handle} style={{
       padding: small?'3px 9px':'5px 13px', borderRadius: 6, fontSize: 10, fontWeight: 600,
-      cursor:'pointer', border:'1px solid', whiteSpace:'nowrap', flexShrink:0,
-      background: isDone?'rgba(245,158,11,0.15)':'rgba(120,53,15,0.3)',
-      borderColor: isDone?'rgba(245,158,11,0.6)':'rgba(120,53,15,0.6)',
-      color: isDone?'#fbbf24':'#d97706',
+      cursor: disabled?'default':'pointer', border:'1px solid', whiteSpace:'nowrap', flexShrink:0,
+      background: disabled?'rgba(120,53,15,0.10)': isDone?'rgba(245,158,11,0.15)':'rgba(120,53,15,0.3)',
+      borderColor: disabled?'rgba(120,53,15,0.25)': isDone?'rgba(245,158,11,0.6)':'rgba(120,53,15,0.6)',
+      color: disabled?'rgba(217,119,6,0.35)': isDone?'#fbbf24':'#d97706',
+      opacity: disabled ? 0.5 : 1,
       transform: isPress?'scale(0.94)':'scale(1)',
-      boxShadow: isPress?'none':'0 1px 4px rgba(0,0,0,0.4)',
+      boxShadow: (disabled||isPress)?'none':'0 1px 4px rgba(0,0,0,0.4)',
       transition:'all 0.12s',
     }}>{isDone?'✓':'📋'}</button>
   );
@@ -619,7 +627,7 @@ function CopyBtn({text, small, gold}) {
       transform: isPress?'scale(0.94)':'scale(1)',
       boxShadow: isPress?'none':'0 1px 4px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.05) inset',
       transition:'all 0.12s',
-    }}>{isDone?'✓ Copiat':'📋 Copiar'}</button>
+    }}>{isDone?(iconOnly?'✓':'✓ Copiat'):(iconOnly?'📋':'📋 Copiar')}</button>
   );
 }
 
@@ -861,22 +869,22 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
         if (openEpisode===epIdx) {
           if (ep.video.length>0){
             flatItems.push({type:'section',h:30,title:'VÍDEO (.MOV)',allNames:ep.video.map(n=>n.name)});
-            ep.video.forEach(n=>flatItems.push({type:'row',h:44,n}));
+            ep.video.forEach((n,nameIdx)=>flatItems.push({type:'row',h:44,n,section:'video',nameIdx}));
           }
           if (ep.audio.length>0){
             flatItems.push({type:'section',h:30,title:'ÀUDIO (.WAV)',allNames:ep.audio.map(n=>n.name)});
-            ep.audio.forEach(n=>flatItems.push({type:'row',h:44,n}));
+            ep.audio.forEach((n,nameIdx)=>flatItems.push({type:'row',h:44,n,section:'audio',nameIdx}));
           }
         }
       });
     } else {
       if (results[0]?.video.length>0){
         flatItems.push({type:'section',h:30,title:'VÍDEO (.MOV)',allNames:results[0].video.map(n=>n.name)});
-        results[0].video.forEach(n=>flatItems.push({type:'row',h:44,n}));
+        results[0].video.forEach((n,nameIdx)=>flatItems.push({type:'row',h:44,n,section:'video',nameIdx}));
       }
       if (results[0]?.audio.length>0){
         flatItems.push({type:'section',h:30,title:'ÀUDIO (.WAV)',allNames:results[0].audio.map(n=>n.name)});
-        results[0].audio.forEach(n=>flatItems.push({type:'row',h:44,n}));
+        results[0].audio.forEach((n,nameIdx)=>flatItems.push({type:'row',h:44,n,section:'audio',nameIdx}));
       }
     }
   }
@@ -894,7 +902,7 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
           <span style={{fontSize:11,fontWeight:700,color:T.text2,letterSpacing:'0.05em',textTransform:'uppercase'}}>Configuració</span>
         </div>
         {a1Open && (
-        <div style={{padding:'12px 20px 16px',display:'flex',flexDirection:'column',gap,maxHeight:380,overflowY:'auto'}}>
+        <div className="scroll-vis" style={{padding:'12px 20px 16px',display:'flex',flexDirection:'column',gap,maxHeight:380,overflowY:'auto'}}>
 
       {/* REF + TÍTOL */}
       <div style={{display:'grid',gridTemplateColumns:'1fr 3fr',gap}}>
@@ -1075,16 +1083,17 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
             <span style={{fontSize:11,fontWeight:700,color:T.text2,letterSpacing:'0.05em',textTransform:'uppercase'}}>Noms generats</span>
             {flatItems.length>0 && <span style={{fontSize:10,color:T.text3,fontWeight:400,marginLeft:2}}>({allNames.length})</span>}
           </div>
-          {flatItems.length>0 && <div onClick={e=>e.stopPropagation()}><CopyBtn text={allNames.join('\n')} small /></div>}
+          {flatItems.length>0 && <div onClick={e=>e.stopPropagation()}><CopyBtn text={allNames.join('\n')} small iconOnly /></div>}
         </div>
         {a2Open && (
           flatItems.length>0 ? (
             <div style={{flex:1,minHeight:0,position:'relative',overflow:'hidden'}}>
               {/* Panell esquerre: noms amb scroll h+v */}
-              <div ref={scrollRef} onScroll={syncScroll} style={{
+              <div ref={scrollRef} onScroll={syncScroll} className="scroll-vis" style={{
                 position:'absolute',left:0,top:0,bottom:0,right:BTN_COL_W,
                 overflowX:'auto',overflowY:'auto',
               }}>
+              <div style={{width:'max-content',minWidth:'100%'}}>
                 {flatItems.map((item,i)=>{
                   const rowBorder = `1px solid ${sepColor}`;
                   if(item.type==='episode') return (
@@ -1095,6 +1104,7 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
                       <span style={{fontSize:9,color:T.text3,display:'inline-block',transition:'transform 0.2s',
                         transform:openEpisode===item.epIdx?'':'rotate(-90deg)'}}>▼</span>
                       <span style={{fontFamily:tweaks.monoFont||'Courier New',fontSize:12,color:'#86efac'}}>{item.label}</span>
+                      <span style={{fontSize:9.5,color:T.text3,marginLeft:2}}>{item.allNames.length}</span>
                     </div>
                   );
                   if(item.type==='section') return (
@@ -1107,13 +1117,13 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
                   );
                   return (
                     <div key={i} style={{height:item.h,display:'flex',alignItems:'center',padding:'3px 0 3px 8px',
-                      width:'max-content',minWidth:'100%',
                       borderBottom:`1px solid rgba(255,255,255,0.025)`}}>
                       <NameBox segments={item.n.segments} mono={tweaks.monoFont} plain />
                       <div style={{width:40,flexShrink:0}} />
                     </div>
                   );
                 })}
+              </div>
               </div>
               {/* Panell dret: botons fixos, sense scrollbar visible, sincronitzat via syncScroll */}
               <div ref={btnRef} className="no-sb" style={{
@@ -1124,35 +1134,36 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
                 {flatItems.map((item,i)=>{
                   const rowBorder = `1px solid ${sepColor}`;
                   if(item.type==='episode') return (
-                    <div key={i} style={{height:item.h,display:'flex',alignItems:'center',justifyContent:'flex-end',
-                      gap:5,padding:'0 8px',
+                    <div key={i} style={{height:item.h,display:'flex',alignItems:'center',justifyContent:'center',
+                      padding:'0 8px',
                       background:isDarkTab?'rgba(255,255,255,0.03)':'rgba(0,0,0,0.03)',
                       borderBottom:rowBorder}}>
-                      <span style={{fontSize:9,background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.08)',
-                        borderRadius:10,padding:'1px 6px',color:T.text3,whiteSpace:'nowrap'}}>{item.allNames.length}</span>
-                      <CopyBtn text={item.allNames.join('\n')} small />
+                      <CopyBtn text={item.allNames.join('\n')} small iconOnly />
                     </div>
                   );
                   if(item.type==='section') return (
-                    <div key={i} style={{height:item.h,display:'flex',alignItems:'center',justifyContent:'flex-end',
+                    <div key={i} style={{height:item.h,display:'flex',alignItems:'center',justifyContent:'center',
                       padding:'0 8px',
                       background:isDarkTab?'rgba(255,255,255,0.015)':'rgba(0,0,0,0.015)',
                       borderBottom:rowBorder}}>
-                      <CopyBtn text={item.allNames.join('\n')} small />
+                      <CopyBtn text={item.allNames.join('\n')} small iconOnly />
                     </div>
                   );
                   return (
-                    <div key={i} style={{height:item.h,display:'flex',alignItems:'center',justifyContent:'flex-end',
-                      padding:'0 8px',borderBottom:'1px solid rgba(255,255,255,0.025)'}}>
+                    <div key={i} style={{height:item.h,display:'flex',alignItems:'center',justifyContent:'center',
+                      gap:4,padding:'0 6px',borderBottom:'1px solid rgba(255,255,255,0.025)'}}>
                       <div style={{
-                        background:'rgba(0,0,0,0.20)',
-                        border:'1px solid rgba(255,255,255,0.10)',
-                        borderRadius:8,padding:'3px 8px',
-                        display:'flex',alignItems:'center',
+                        background:'rgba(0,0,0,0.20)',border:'1px solid rgba(255,255,255,0.10)',
+                        borderRadius:8,padding:'3px 8px',display:'flex',alignItems:'center',
                         boxShadow:'0 1px 6px rgba(0,0,0,0.25) inset, 0 1px 0 rgba(255,255,255,0.06)',
                       }}>
-                        <CopyBtn text={item.n.name} small />
+                        <CopyBtn text={item.n.name} small iconOnly />
                       </div>
+                      <CopyBtn
+                        text={fmt==='SER' ? results.map(ep=>ep[item.section]?.[item.nameIdx]?.name||'').filter(Boolean).join('\n') : item.n.name}
+                        small iconOnly gold
+                        disabled={fmt!=='SER'}
+                      />
                     </div>
                   );
                 })}
