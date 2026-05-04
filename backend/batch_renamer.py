@@ -1,17 +1,53 @@
 import os
+import platform
 from datetime import datetime
 
 def scan_folder(folder: str, rows: list) -> list:
-    existing = set(os.listdir(folder))
+    # Only consider files, not subdirectories
+    entries = [e for e in os.listdir(folder) if os.path.isfile(os.path.join(folder, e))]
+    # Windows NTFS is case-insensitive; normalise to avoid false "missing"
+    is_windows = platform.system() == "Windows"
+    if is_windows:
+        existing_lower = {name.lower(): name for name in entries}
+        def _norm(name): return name.lower()
+    else:
+        def _norm(name): return name
+
+    # Projected disk state: updated as renames are planned, enabling permutation renames
+    # (e.g. A->B, C->A works when B->C frees up B first in the batch)
+    projected = set(existing_lower.keys() if is_windows else entries)
+
     result = []
+    seen_targets = set()
+    seen_origins = set()  # tracks origins consumed by case-only renames
     for row in rows:
         orig = row["original"]
-        new = row["new"]
-        if orig not in existing:
+        new  = row["new"]
+        orig_norm = _norm(orig)
+        new_norm  = _norm(new)
+        if orig_norm not in projected:
             status = "missing"
-        elif new in existing:
+        elif orig == new:
+            status = "conflict"
+        elif is_windows and orig.lower() == new.lower():
+            # Case-only rename: valid on NTFS, but block duplicate origins
+            if orig_norm in seen_origins:
+                status = "conflict"
+            else:
+                seen_origins.add(orig_norm)
+                seen_targets.add(new_norm)
+                status = "found"
+        elif orig_norm in seen_origins:
+            # Origin already consumed by a case-only rename above
+            status = "conflict"
+        elif new_norm in projected and new_norm != orig_norm:
+            status = "conflict"
+        elif new_norm in seen_targets:
             status = "conflict"
         else:
+            projected.discard(orig_norm)
+            projected.add(new_norm)
+            seen_targets.add(new_norm)
             status = "found"
         result.append({**row, "status": status})
     return result
@@ -23,6 +59,13 @@ def execute_rename(folder: str, rows: list) -> list:
             continue
         src = os.path.join(folder, row["original"])
         dst = os.path.join(folder, row["new"])
+        # Re-validate just before renaming to avoid TOCTOU issues
+        if not os.path.exists(src):
+            results.append({**row, "ok": False, "error": "fitxer origen ja no existeix"})
+            continue
+        if os.path.exists(dst) and not (platform.system() == "Windows" and src.lower() == dst.lower()):
+            results.append({**row, "ok": False, "error": "fitxer destí ja existeix (conflicte)"})
+            continue
         try:
             os.rename(src, dst)
             results.append({**row, "ok": True, "error": None})

@@ -1,7 +1,7 @@
 import sys, os
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebEngineCore import QWebEngineScript
+from PyQt6.QtWebEngineCore import QWebEngineScript, QWebEngineSettings, QWebEnginePage
 from PyQt6.QtWebChannel import QWebChannel
 from PyQt6.QtCore import QUrl, QFile, QIODevice
 from backend.bridge import Bridge
@@ -10,10 +10,18 @@ FRONTEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", 
 
 def _load_qwebchannel_js():
     f = QFile(":/qtwebchannel/qwebchannel.js")
-    f.open(QIODevice.OpenModeFlag.ReadOnly)
+    if not f.open(QIODevice.OpenModeFlag.ReadOnly):
+        raise RuntimeError(
+            "Cannot open Qt resource :/qtwebchannel/qwebchannel.js — "
+            "check that PyQt6-Qt6-WebChannel is installed correctly."
+        )
     js = bytes(f.readAll()).decode()
     f.close()
     return js
+
+class DebugPage(QWebEnginePage):
+    def javaScriptConsoleMessage(self, level, msg, line, source):
+        print(f"JS [{line}] {msg}")
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -25,25 +33,32 @@ class MainWindow(QMainWindow):
         self.view = QWebEngineView(self)
         self.setCentralWidget(self.view)
 
-        # Inject qwebchannel.js before page scripts run
+        page = DebugPage(self.view)
+        self.view.setPage(page)
+
+        settings = page.settings()
+        settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
+
         script = QWebEngineScript()
         script.setName("qwebchannel")
         script.setSourceCode(_load_qwebchannel_js())
         script.setInjectionPoint(QWebEngineScript.InjectionPoint.DocumentCreation)
         script.setWorldId(QWebEngineScript.ScriptWorldId.MainWorld)
-        self.view.page().scripts().insert(script)
+        page.scripts().insert(script)
 
-        # Register bridge on QWebChannel
-        self.channel = QWebChannel(self.view.page())
+        self.channel = QWebChannel(page)
         self.bridge = Bridge(self)
         self.channel.registerObject("bridge", self.bridge)
-        self.view.page().setWebChannel(self.channel)
+        page.setWebChannel(self.channel)
 
         self.view.setUrl(QUrl.fromLocalFile(FRONTEND))
 
-if __name__ == "__main__":
+def _run():
     app = QApplication(sys.argv)
     app.setApplicationName("NomsMasters")
     window = MainWindow()
     window.show()
     raise SystemExit(app.exec())
+
+if __name__ == "__main__":
+    _run()

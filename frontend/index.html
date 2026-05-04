@@ -323,7 +323,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "glowIntensity": "medium",
   "btnStyle": "gradient",
   "density": "compact",
-  "showExtension": false,
+  "showExtension": true,
   "monoFont": "Courier New"
 }/*EDITMODE-END*/;
 
@@ -383,7 +383,7 @@ function buildFmt(fmt, tmp, epiFrom, epiTo, epi) {
   if (fmt !== 'SER') return fmt;
   return `SER_S${String(tmp).padStart(2,'0')}_E${String(epi!==undefined?epi:epiFrom).padStart(4,'0')}`;
 }
-function generateNames({ref,titol,fmt,tmp,epiFrom,epiTo,prfs,langs,visuals,length,taBlocks,genVideo,genAudio,inclExt}) {
+function generateNames({ref,titol,fmt,tmp,epiFrom,epiTo,vxx,prfs,langs,visuals,length,taBlocks,genVideo,genAudio,inclExt}) {
   if (!ref||!titol||prfs.length===0||langs.length===0) return [];
   if (!genVideo&&!genAudio) return [];
   const vStr = () => 'V' + String(vxx).padStart(2, '0');
@@ -480,8 +480,14 @@ let T = {
   dark: _d0,
 };
 
+function isColorDark(hex) {
+  const h = hex.replace('#','');
+  const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+  return (0.299*r + 0.587*g + 0.114*b) < 128;
+}
+
 function applyTheme(theme, customBg) {
-  const isDark = theme ? theme.dark : true;
+  const isDark = customBg ? isColorDark(customBg) : (theme ? theme.dark : true);
   const bg = customBg || (theme ? theme.bg : '#1e1e2e');
   document.body.style.background = bg;
   if (isDark) {
@@ -496,7 +502,7 @@ function applyTheme(theme, customBg) {
 // ─── SHARED UI PRIMITIVES ─────────────────────────────────────────────────────
 
 // Modern card — border dinàmic per mode clar/fosc
-function Card({children, style, onClick}) {
+function Card({children, style, onClick, accent}) {
   const [hov, setHov] = useState(false);
   const isDark = T.dark !== false;
   return (
@@ -516,6 +522,7 @@ function Card({children, style, onClick}) {
           : `1px solid rgba(0,0,0,${hov ? 0.12 : 0.06})`,
         borderRadius: 10,
         padding: '11px 14px',
+        borderLeft: accent ? `3px solid ${accent}` : undefined,
         boxShadow: isDark
           ? '0 2px 14px rgba(0,0,0,0.22), 0 1px 0 rgba(255,255,255,0.07) inset'
           : '0 1px 8px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset',
@@ -539,7 +546,8 @@ function NameBox({ segments, mono }) {
       padding: '9px 13px',
       fontFamily: mono || 'Courier New',
       fontSize: 11.5,
-      display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center',
+      display: 'flex', flexWrap: 'nowrap', gap: 2, alignItems: 'center',
+      overflowX: 'auto', flex: 1, minWidth: 0,
       lineHeight: 1.9,
       boxShadow: '0 1px 6px rgba(0,0,0,0.25) inset, 0 1px 0 rgba(255,255,255,0.06)',
     }}>
@@ -555,12 +563,35 @@ function NameBox({ segments, mono }) {
 // Copy button with satisfying click animation
 function CopyBtn({text, small, gold}) {
   const [st, setSt] = useState('idle'); // idle | press | done
+  const timersRef = useRef([]);
   const handle = () => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
     setSt('press');
-    navigator.clipboard?.writeText(text).catch(()=>{});
-    setTimeout(()=>setSt('done'), 80);
-    setTimeout(()=>setSt('idle'), 1800);
+    if (window.bridge) {
+      window.bridge.copy_to_clipboard(text);
+    } else {
+      const legacyCopy = () => {
+        try {
+          const el = document.createElement('textarea');
+          el.value = text;
+          el.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
+          document.body.appendChild(el);
+          el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+        } catch(e) {}
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).catch(legacyCopy);
+      } else {
+        legacyCopy();
+      }
+    }
+    timersRef.current.push(setTimeout(()=>setSt('done'), 80));
+    timersRef.current.push(setTimeout(()=>setSt('idle'), 1800));
   };
+  useEffect(() => () => timersRef.current.forEach(clearTimeout), []);
   const isDone = st==='done', isPress = st==='press';
   if (gold) return (
     <button onClick={handle} style={{
@@ -725,20 +756,20 @@ function CollapsibleSection({title, count, defaultOpen=true, children}) {
 
 // ─── TAB 1: CREAR NOMS ────────────────────────────────────────────────────────
 function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
-  const [ref, setRef] = useState('1983');
-  const [titolRaw, setTitolRaw] = useState('BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS');
-  const [titol, setTitol] = useState('BABA_YAGA_Y_EL_LIBRO_DE_HECHIZOS');
+  const [ref, setRef] = useState('');
+  const [titolRaw, setTitolRaw] = useState('');
+  const [titol, setTitol] = useState('');
   const [fmt, setFmt] = useState('FTR');
   const [tmp, setTmp] = useState(1);
   const [epiFrom, setEpiFrom] = useState(1);
   const [epiTo, setEpiTo] = useState(3);
-  const [prfs, setPrfs] = useState(['MASTER','DCP']);
-  const [langStates, setLangStates] = useState({ES:'pin',EN:'sel',CA:'sel'});
-  const [visuals, setVisuals] = useState(['GRA','GRA_SBT']);
+  const [prfs, setPrfs] = useState(['MASTER']);
+  const [langStates, setLangStates] = useState({EN:'pin',ES:'sel',CA:'sel'});
+  const [visuals, setVisuals] = useState(['XXX']);
   const [length, setLength] = useState('S');
   const [vxx, setVxx] = useState(1);
-  const [taActive, setTaActive] = useState({MIX:true,ME:true,DX:false});
-  const [taChannels, setTaChannels] = useState({MIX:['2_0','5_1'],ME:['5_1'],DX:['1']});
+  const [taActive, setTaActive] = useState({MIX:true,ME:false,DX:false});
+  const [taChannels, setTaChannels] = useState({MIX:['2_0'],ME:[],DX:[]});
   const [genVideo, setGenVideo] = useState(true);
   const [genAudio, setGenAudio] = useState(true);
   const [results, setResults] = useState(null);
@@ -757,29 +788,33 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
     if (prfs.length===0) { setError('Cal seleccionar almenys un Perfil (PRF).'); return; }
     if (activeLangs.length===0) { setError('Cal seleccionar almenys un Idioma.'); return; }
     if (!genVideo&&!genAudio) { setError('Cal activar vídeos o àudios.'); return; }
+    if (fmt==='SER' && (epiTo-epiFrom+1) > 500) { setError(`Massa episodis (${epiTo-epiFrom+1}). Redueix el rang (màxim 500).`); return; }
+    if (genVideo && visuals.length===0 && !genAudio) { setError('Cal seleccionar almenys un VIS per generar vídeos.'); return; }
+    if (genAudio && activeBlocks.length===0) { setError('Cal seleccionar almenys un bloc TA actiu per generar àudios.'); return; }
     setError('');
-    setResults(generateNames({ref:ref.trim(),titol:t,fmt,tmp,epiFrom,epiTo,prfs,langs:activeLangs,visuals,length,taBlocks:activeBlocks,genVideo,genAudio,inclExt:tweaks.showExtension}));
+    setResults(generateNames({ref:ref.trim(),titol:t,fmt,tmp,epiFrom,epiTo,vxx,prfs,langs:activeLangs,visuals,length,taBlocks:activeBlocks,genVideo,genAudio,inclExt:tweaks.showExtension}));
     setOpenEpisode(0);
   };
 
   const allNames = results ? results.flatMap(ep=>[...ep.video.map(n=>n.name),...ep.audio.map(n=>n.name)]) : [];
 
   const cycleLang = code => {
-    const pins = Object.values(langStates).filter(s=>s==='pin').length;
     setLangStates(ls => {
+      const pins = Object.values(ls).filter(s=>s==='pin').length;
       const cur=ls[code];
       if(!cur) return {...ls,[code]:'sel'};
-      if(cur==='sel') { if(pins<2) return {...ls,[code]:'pin'}; const {[code]:_,...r}=ls; return r; }
-      const {[code]:_,...r}=ls; return r;
+      if(cur==='sel') { if(pins<2) return {...ls,[code]:'pin'}; const {[code]:_,...r}=ls; if(Object.keys(r).length===0) return ls; return r; }
+      const {[code]:_,...r}=ls; if(Object.keys(r).length===0) return ls; return r;
     });
   };
   const toggleTaBlock = id => {
-    const was=taActive[id];
-    const next={...taActive,[id]:!was};
-    setTaActive(next);
-    if(!was){ const def=TA_BLOCKS.find(b=>b.id===id)?.defCh||'2_0'; setTaChannels(tc=>({...tc,[id]:[def]})); }
-    const anyA=Object.values(next).some(Boolean);
-    setGenAudio(anyA);
+    setTaActive(prev => {
+      const was=prev[id];
+      const next={...prev,[id]:!was};
+      if(!was){ setTaChannels(tc=>{ const def=TA_BLOCKS.find(b=>b.id===id)?.defCh||'2_0'; return {...tc,[id]:[def]}; }); }
+      setGenAudio(Object.values(next).some(Boolean));
+      return next;
+    });
   };
   const toggleCn = (bId,ch) => setTaChannels(tc=>{
     const cur=tc[bId]||[];
@@ -831,13 +866,14 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:8,flex:1,minWidth:260,
             opacity:isSER?1:0.3,pointerEvents:isSER?'auto':'none',transition:'opacity 0.2s'}}>
             {[{label:'Temporada',val:tmp,set:setTmp,min:1,max:99},
-              {label:'Episodi des de',val:epiFrom,set:setEpiFrom,min:1,max:9999},
-              {label:'Episodi fins a',val:v=>setEpiTo(Math.max(epiFrom,v)),min:1,max:9999,val2:epiTo}
-            ].map(({label,val,val2,set,min,max},k)=>(
+              {label:'Episodi des de',val:epiFrom,set:v=>{setEpiFrom(v);if(v>=epiTo)setEpiTo(v+1);},min:1,max:9998},
+              {label:'Episodi fins a',val:epiTo,set:v=>setEpiTo(Math.max(epiFrom+1,v)),min:2,max:9999}
+            ].map(({label,val,set,min,max},k)=>(
               <div key={k}>
                 <div style={{fontSize:10,color:T.text3,marginBottom:3}}>{label}</div>
-                <input type="number" value={val2||val} min={min} max={max}
-                  onChange={e=>set(Math.max(min,Math.min(max,parseInt(e.target.value)||min)))}
+                <input type="number" value={val} min={min} max={max}
+                  onChange={e=>{const n=parseInt(e.target.value);if(!isNaN(n))set(Math.max(min,Math.min(max,n)));}}
+                  onBlur={e=>{const n=parseInt(e.target.value);set(isNaN(n)?min:Math.max(min,Math.min(max,n)));}}
                   style={{width:'100%'}} />
               </div>
             ))}
@@ -909,7 +945,9 @@ function Tab1({tweaks, setTweak, tweakColors, glowA, taBlocksDynamic}) {
           <SectionLabel>Versió (VXX)</SectionLabel>
           <div style={{display:'flex',alignItems:'center',gap:5}}>
             <span style={{fontSize:12.5,fontWeight:600,color:T.text2}}>V</span>
-            <input type="number" value={vxx} min={1} max={99} style={{width:58}} onChange={e=>setVxx(Math.max(1,Math.min(99,parseInt(e.target.value)||1)))} />
+            <input type="number" value={vxx} min={1} max={99} style={{width:58}}
+              onChange={e=>{const n=parseInt(e.target.value);if(!isNaN(n))setVxx(Math.max(1,Math.min(99,n)));}}
+              onBlur={e=>{const n=parseInt(e.target.value);setVxx(isNaN(n)?1:Math.max(1,Math.min(99,n)));}} />
           </div>
           <div style={{fontSize:9.5,color:T.text3,marginTop:4}}>V01 – V99</div>
         </Card>
@@ -1089,6 +1127,7 @@ function Tab2({tweaks}) {
     if(p.fields.ta){const ts=p.fields.cn?`${p.fields.ta}_${p.fields.cn}`:p.fields.ta;s.push({t:'TA',v:ts});s.push({t:'SEP',v:'-'});}
     if(p.fields.vxx){s.push({t:'VXX',v:p.fields.vxx});}
     if(p.fields.ext) s.push({t:'EXT',v:p.fields.ext});
+    while(s.length && s[s.length-1].t==='SEP') s.pop();
     return s;
   };
 
@@ -1185,18 +1224,22 @@ function Tab3({tweaks}) {
   const [csvRows, setCsvRows] = useState([]);   // raw rows from CSV parse
   const [csvPath, setCsvPath] = useState('');
   const [folderPath, setFolderPath] = useState('');
-  const [logExp, setLogExp] = useState(false);
+  const [logExp, setLogExp] = useState(''); // '' | 'ok' | 'err'
+  const [renaming, setRenaming] = useState(false);
 
   // Rescan when both CSV and folder are loaded
   useEffect(() => {
     if (!csvPath || !folderPath || !csvRows.length || !window.bridge) return;
+    let cancelled = false;
     (async () => {
       const raw = await new Promise(r => window.bridge.scan_folder_js(folderPath, JSON.stringify(csvRows), r));
+      if (cancelled) return;
       try {
         const result = JSON.parse(raw);
         if (!result.error) setRows(result);
       } catch(e) {}
     })();
+    return () => { cancelled = true; };
   }, [csvPath, folderPath, csvRows]);
 
   const stats = {
@@ -1211,11 +1254,12 @@ function Tab3({tweaks}) {
     if (!window.bridge) return;
     const path = await new Promise(r => window.bridge.pick_csv(r));
     if (!path) return;
-    setCsvPath(path);
+    setCsvRows([]);
+    setRows([]);
     const raw = await new Promise(r => window.bridge.parse_csv(path, r));
     try {
       const data = JSON.parse(raw);
-      if (!data.error) setCsvRows(data.rows);
+      if (!data.error) { setCsvPath(path); setCsvRows(data.rows); }
     } catch(e) {}
   };
 
@@ -1226,31 +1270,40 @@ function Tab3({tweaks}) {
   };
 
   const handleRename = async () => {
-    if (!window.bridge) return;
+    if (!window.bridge || renaming) return;
     const foundRows = rows.filter(r => r.status === 'found');
     if (!foundRows.length) return;
-    const conf = await new Promise(r => window.bridge.confirm_rename(String(foundRows.length), r));
-    if (conf !== 'yes') return;
-    const raw = await new Promise(r =>
-      window.bridge.execute_rename_js(folderPath, JSON.stringify(foundRows), r)
-    );
+    setRenaming(true);
     try {
-      const results = JSON.parse(raw);
-      if (!results.error) {
-        setRows(prev => prev.map(row => {
-          const done = results.find(res => res.original === row.original);
-          return done ? {...row, status: done.ok ? 'done' : 'error'} : row;
-        }));
-      }
-    } catch(e) {}
+      const conf = await new Promise(r => window.bridge.confirm_rename(String(foundRows.length), r));
+      if (conf !== 'yes') return;
+      const raw = await new Promise(r =>
+        window.bridge.execute_rename_js(folderPath, JSON.stringify(foundRows), r)
+      );
+      try {
+        const results = JSON.parse(raw);
+        if (!results.error) {
+          setRows(prev => prev.map(row => {
+            const done = results.find(res => res.original === row.original);
+            return done ? {...row, ok: done.ok, error: done.error, status: done.ok ? 'done' : 'error'} : row;
+          }));
+        }
+      } catch(e) {}
+    } finally {
+      setRenaming(false);
+    }
   };
 
   const exportLog = async () => {
     if (!window.bridge) return;
     const doneRows = rows.filter(r => r.status === 'done' || r.status === 'error');
     if (!doneRows.length) return;
-    await new Promise(r => window.bridge.export_log_js(JSON.stringify(doneRows), r));
-    setLogExp(true); setTimeout(() => setLogExp(false), 2000);
+    const raw = await new Promise(r => window.bridge.export_log_js(JSON.stringify(doneRows), r));
+    try {
+      const res = JSON.parse(raw);
+      if (res.ok) { setLogExp('ok'); setTimeout(() => setLogExp(''), 2000); }
+      else if (res.error !== "cancel·lat") { setLogExp('err'); setTimeout(() => setLogExp(''), 3000); }
+    } catch(e) { setLogExp('err'); setTimeout(() => setLogExp(''), 3000); }
   };
 
   const statCfg = {
@@ -1311,6 +1364,11 @@ function Tab3({tweaks}) {
             </tr>
           </thead>
           <tbody>
+            {rows.length===0 && (
+              <tr><td colSpan={5} style={{textAlign:'center',padding:'32px 16px',color:T.text3,fontSize:12}}>
+                Carrega un CSV i selecciona una carpeta per veure la previsualització
+              </td></tr>
+            )}
             {rows.map((row,idx)=>{
               const c=statCfg[row.status]||statCfg.missing;
               return (
@@ -1335,14 +1393,16 @@ function Tab3({tweaks}) {
       <div style={{display:'flex',gap:8}}>
         <PrimaryBtn onClick={handleRename}
           style={{
-            background: stats.ok>0 ? 'linear-gradient(145deg,#166534,#15803d)' : undefined,
-            opacity: stats.ok===0 ? 0.4 : 1,
-            cursor: stats.ok===0 ? 'not-allowed' : 'pointer',
+            ...(stats.ok>0 && !renaming ? {background:'linear-gradient(145deg,#166534,#15803d)'} : {}),
+            opacity: (stats.ok===0 || renaming) ? 0.4 : 1,
+            cursor: (stats.ok===0 || renaming) ? 'not-allowed' : 'pointer',
           }}>
-          ✅ Renombrar {stats.ok} fitxers trobats
+          {renaming ? '⏳ Renombrant…' : `✅ Renombrar ${stats.ok} fitxers trobats`}
         </PrimaryBtn>
-        <SecondaryBtn onClick={exportLog} color={logExp?'rgba(34,197,94,0.4)':'rgba(99,102,241,0.3)'} style={{whiteSpace:'nowrap',padding:'11px 18px'}}>
-          {logExp?'✓ Exportat':'📋 Exportar log'}
+        <SecondaryBtn onClick={exportLog}
+          color={logExp==='ok'?'rgba(34,197,94,0.4)':logExp==='err'?'rgba(239,68,68,0.4)':'rgba(99,102,241,0.3)'}
+          style={{whiteSpace:'nowrap',padding:'11px 18px'}}>
+          {logExp==='ok'?'✓ Exportat':logExp==='err'?'✗ Error exportant':'📋 Exportar log'}
         </SecondaryBtn>
       </div>
       <div style={{fontSize:10,color:T.text3,textAlign:'center'}}>Els fitxers no trobats i els conflictes s'ignoraran</div>
@@ -1385,7 +1445,7 @@ function App() {
   const glowA = GLOW_STRENGTH[t.glowIntensity] || GLOW_STRENGTH.medium;
 
   useEffect(()=>{
-    applyTheme(t.customBg ? null : theme, t.customBg || null);
+    applyTheme(theme, t.customBg || null);
     document.documentElement.style.setProperty('--accent', accent);
     document.documentElement.style.setProperty('--accent-dim', hexToRgba(accent, 0.15));
     forceUpdate(n => n + 1);
@@ -1404,11 +1464,6 @@ function App() {
     idi: t.colorIdi || '#f472b6',
   };
 
-  useEffect(()=>{
-    document.documentElement.style.setProperty('--accent', accent);
-    document.documentElement.style.setProperty('--accent-dim', hexToRgba(accent, 0.15));
-    document.body.style.background = theme.bg;
-  },[accent, t.bgTheme, t.customBg]);
 
   const isDark = T.dark !== false;
 
@@ -1458,9 +1513,9 @@ function App() {
         borderTop:'none', borderRadius:'0 0 12px 12px', padding:'20px', minHeight:520,
         boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.3), 0 1px 0 rgba(255,255,255,0.06) inset' : '0 4px 20px rgba(0,0,0,0.08)',
       }}>
-        {activeTab===0 && <Tab1 tweaks={t} setTweak={setTweak} tweakColors={tweakColors} glowA={glowA} taBlocksDynamic={taBlocksDynamic} />}
-        {activeTab===1 && <Tab2 tweaks={t} />}
-        {activeTab===2 && <Tab3 tweaks={t} />}
+        <div style={{display:activeTab===0?undefined:'none'}}><Tab1 tweaks={t} setTweak={setTweak} tweakColors={tweakColors} glowA={glowA} taBlocksDynamic={taBlocksDynamic} /></div>
+        <div style={{display:activeTab===1?undefined:'none'}}><Tab2 tweaks={t} /></div>
+        <div style={{display:activeTab===2?undefined:'none'}}><Tab3 tweaks={t} /></div>
       </div>
 
       {/* Tweaks Panel */}
@@ -1481,10 +1536,10 @@ function App() {
             ))}
           </div>
           <div style={{marginTop:8}}>
-            <window.TweakColor label="Color personalitzat" value={t.customBg||'#f4f4f5'} onChange={v=>{setTweak('customBg',v);setTweak('bgTheme','');}} />
-            {t.customBg && <div onClick={()=>{setTweak('customBg','');setTweak('bgTheme','zinc');}} style={{fontSize:10,color:accent,cursor:'pointer',marginTop:4,textAlign:'right'}}>↩ Tornar als presets</div>}
+            <window.TweakColor label="Color personalitzat" value={t.customBg||'#f4f4f5'} onChange={v=>setTweak('customBg',v)} />
+            {t.customBg && <div onClick={()=>setTweak('customBg','')} style={{fontSize:10,color:accent,cursor:'pointer',marginTop:4,textAlign:'right'}}>↩ Tornar als presets</div>}
           </div>
-          <window.TweakToggle label="Mode clar (light mode)" value={!!(t.bgTheme&&!BG_THEMES[t.bgTheme]?.dark)||(!t.bgTheme&&t.customBg?false:false)} onChange={v=>{ if(v){setTweak('bgTheme','zinc');setTweak('customBg','');}else{setTweak('bgTheme','dark');setTweak('customBg','');} }} />
+          <window.TweakToggle label="Mode clar (light mode)" value={t.customBg ? !isColorDark(t.customBg) : !!(t.bgTheme&&!BG_THEMES[t.bgTheme]?.dark)} onChange={v=>{ if(v){setTweak('bgTheme','zinc');setTweak('customBg','');}else{setTweak('bgTheme','dark');setTweak('customBg','');} }} />
         </window.TweakSection>
 
         <window.TweakSection label="Accent i estil">
