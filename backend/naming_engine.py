@@ -47,6 +47,10 @@ def _generate_for_episode(ref, titol, fmt_seg, params):
     return {"video": videos, "audio": audios}
 
 def generate_names(params):
+    for key in ("ref", "titol", "fmt"):
+        if key not in params:
+            raise ValueError(f"generate_names: missing required param '{key}'")
+
     ref = params["ref"]
     titol = params["titol"]
     fmt = params["fmt"]
@@ -55,6 +59,8 @@ def generate_names(params):
     epi_to = params.get("epi_to", 1)
 
     if fmt == "SER":
+        if int(epi_from) > int(epi_to):
+            raise ValueError(f"epi_from ({epi_from}) must be <= epi_to ({epi_to})")
         episodes = []
         for epi in range(int(epi_from), int(epi_to) + 1):
             fmt_seg = f"SER_S{int(tmp):02d}_E{int(epi):04d}"

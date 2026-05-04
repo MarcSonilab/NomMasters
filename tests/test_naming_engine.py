@@ -72,3 +72,11 @@ def test_multiple_visuals():
     p = {**BASE, "visuals": ["XXX", "GRA"]}
     result = generate_names(p)
     assert len(result["video"]) == 2
+
+def test_missing_required_key_raises():
+    with pytest.raises(ValueError, match="missing required param"):
+        generate_names({"ref": "X", "titol": "Y"})  # missing "fmt"
+
+def test_ser_degenerate_range_raises():
+    with pytest.raises(ValueError, match="epi_from"):
+        generate_names({**BASE, "fmt": "SER", "epi_from": 5, "epi_to": 4})
